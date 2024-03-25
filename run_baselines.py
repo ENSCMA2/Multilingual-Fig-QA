@@ -486,13 +486,12 @@ def main_train_loop(train_dataloader, eval_dataloader, model, tokenizer, metric,
 
 def main(args=None):
     if args is None:
-        args = parse_args()
-        
+        args = parse_args()    
     if not isinstance(args, dict):
         args = vars(args)
-    
     # or else there will be inconsistencies between hyperparam runs.
     args = copy.deepcopy(args)
+    print("PYTHON PATH", args["model_name_or_path"])
     
     # Initialize the accelerator. We will let the accelerator handle device placement for us in this example.
     # If we're using tracking, we also need to initialize it here and it will by default pick up all supported trackers
@@ -618,10 +617,12 @@ def main(args=None):
     # In distributed training, the .from_pretrained methods guarantee that only one local process can concurrently
     # download model & vocab.
     if args["config_name"] and not args["model_name_or_path"] == "xlm-roberta-xlarge":
+        print("ARGS", args["model_name_or_path"])
         config = AutoConfig.from_pretrained(args["model_name_or_path"])
     elif args["model_name_or_path"] == "xlm-roberta-xlarge":
         config = XLMRobertaXLConfig()
     elif args["model_name_or_path"]:
+        logger.info(f"ARGS {args['model_name_or_path']}")
         config = AutoConfig.from_pretrained(args["model_name_or_path"])
     else:
         config = CONFIG_MAPPING[args["model_type"]]()

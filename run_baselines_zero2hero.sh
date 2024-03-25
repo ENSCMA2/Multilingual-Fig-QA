@@ -3,23 +3,25 @@ MODEL=${1:-xlm_roberta_large_z2h}
 MODEL_NAME_OR_PATH=${2:-xlm-roberta-large}
 BASE_DIR=`pwd`
 SEED=${3:-10}
-LR=${4:-5e-6}
+LR=${4:-5e-5}
 BATCH_SIZE=${5:-32}
 declare -a languages=( "hi" "id" "jv" "kn" "su" "sw" )
 declare -a number=( "2" "4" "6" "8" "10" )
 
-
+echo "LANGUAGES: ${languages[@]}"
 # TRAIN
 for lang in "${!languages[@]}"
 do
+    echo "LANG: ${lang}"
     for num in "${!number[@]}"
     do
-    rm -rf "./${MODEL}/${lang}_${num}/ckpts_seed${SEED}_lr${LR}"
-    mkdir -p "./${MODEL}/${lang}_${num}/ckpts_seed${SEED}_lr${LR}"
+    rm -rf "./${MODEL_NAME_OR_PATH}${languages[lang]}_${number[num]}/ckpts_seed${SEED}_lr${LR}"
+    mkdir -p "./${MODEL_NAME_OR_PATH}${languages[lang]}_${number[num]}/ckpts_seed${SEED}_lr${LR}"
+    echo "CREATED ./${MODEL_NAME_OR_PATH}${languages[lang]}_${number[num]}/ckpts_seed${SEED}_lr${LR}"
     echo "======================================================================="
-    echo "========== Metaphor ${MODEL} LR ${LR} seed ${SEED} language ${languages[lang]} number${number[num]} ========"
+    echo "========== Metaphor ${MODEL} LR ${LR} PATH ${MODEL_NAME_OR_PATH} seed ${SEED} language ${languages[lang]} number${number[num]} ========"
     echo "======================================================================="
-    echo ${MODEL_NAME_OR_PATH}
+    echo "PATH ${MODEL_NAME_OR_PATH}"
     python run_baselines.py \
     --model_name_or_path ${MODEL_NAME_OR_PATH} \
     --train_file ${BASE_DIR}/data/sample_addition_data_winogrand/train/${languages[lang]}/${languages[lang]}_${number[num]}.csv  \
@@ -30,7 +32,7 @@ do
     --gradient_accumulation_steps 1 \
     --learning_rate ${LR} \
     --num_train_epochs 1 \
-    --output_dir ./${MODEL}/${languages[lang]}_${number[num]}/ckpts_seed${SEED}_lr${LR} \
+    --output_dir ./${MODEL_NAME_OR_PATH}${languages[lang]}_${number[num]}/ckpts_seed${SEED}_lr${LR} \
     --seed $SEED \
     --silent 
     done

@@ -71,7 +71,7 @@ if [ "$EXPERIMENT" == "train" ]; then
         echo "INFO: Outputting translated results to ${OUTPUT_TRANSLATED_FILE}"
         > "${OUTPUT_TRANSLATED_FILE}"
         echo "Seed: ${SEED}" >> "${OUTPUT_TRANSLATED_FILE}"
-        ./run_baselines_test.sh "${OUTPUT}" "${LR}" "${SEED}" "translate_test" | tee -a "${OUTPUT_TRANSLATED_FILE}"
+        ./run_baselines_test.sh "${OUTPUT}" "${LR}" "${SEED}" "translate-test" | tee -a "${OUTPUT_TRANSLATED_FILE}"
     done
 elif [ "$EXPERIMENT" == "zero2hero" ]; then
     for SEED in "${SEEDS[@]}"; do
