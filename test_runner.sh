@@ -5,6 +5,7 @@
 
 # TODO: average over non-degenerate seeds
 SEEDS=( 10 31 32 33 81 )
+# LANGS=( "en_dev" )
 LANGS=( "hi" "id" "jv" "kn" "su" "sw")
 print_help() {
     echo "Usage: $0 -e <experiment setting> -o <output file> -m <model name> "
@@ -91,7 +92,7 @@ elif [ "$EXPERIMENT" == "zero2hero" ]; then
         echo "INFO: Outputting results to ${OUTPUT_FILE}"
         > "${OUTPUT_FILE}"
         echo "Seed: ${SEED}" >> "${OUTPUT_FILE}"
-        ./test_z2h.sh "${OUTPUT}" | tee "${OUTPUT_FILE}"
+        ./test_z2h.sh "${PRETRAINED_EN_MODEL}" "${SEED}" | tee "${OUTPUT_FILE}"
     done
 else
     print_help

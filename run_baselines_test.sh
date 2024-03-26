@@ -1,5 +1,7 @@
 # TEST
+# test_files=( "en_dev.csv" )
 test_files=( "hi.csv" "id.csv" "jv.csv" "kn.csv" "su.csv" "sw.csv" )
+# languages=( "en" )
 languages=( "hi" "id" "jv" "kn" "su" "sw" )
 
 LR=${2:-5e-6}
