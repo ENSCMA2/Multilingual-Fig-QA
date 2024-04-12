@@ -25,7 +25,7 @@ do
         for n in 2 4 6 8 10;
         do
            echo $n;
-           python run_llm_baselines.py --test_file $lang --test_dir translate-test --n $n --model_name_or_path $model 
+           python run_llm_baselines.py --test_file $lang_$n --test_dir data/addition_data_winogrand/test/$lang --n $n --model_name_or_path $model 
         done
     done
 done
