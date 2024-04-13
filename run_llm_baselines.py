@@ -57,6 +57,13 @@ from transformers.utils import PaddingStrategy, get_full_repo_name
 import pdb
 import re
 
+def model_short(mname):
+    if "llama" in mname:
+        return "llama"
+    if "mistral" in mname:
+        return "mixtral"
+    return "qwen2"
+
 ALL_LANGS = ["en", "hi", "id", "jv", "kn", "su", "sw", None]
 
 def parse_args():
@@ -88,15 +95,13 @@ def prompt_template(batch, n = 0):
         relevant = pd.read_csv(td).iloc[-2 * n:, :]
         strings = []
         for i, tem in relevant.iterrows():
-            string = f'''Phrase: {tem['startphrase']}
+            string = f'''\nPhrase: {tem['startphrase']}
 ending1: {tem['ending1']}
 ending2: {tem['ending2']}
 {'ending1' if tem['labels'] == 0 else 'ending2'}'''
             strings.append(string)
-        shots = f'''\nHere are some examples of phrases, possible endings, and which ending corresponds to the meaning of each phrase.
-{'\n'.join(strings)}
-Now, it's your turn.
-'''
+        shots = f'''\nHere are some examples of phrases, possible endings, and which ending corresponds to the meaning of each phrase.{''.join(strings)}
+Now, it's your turn.'''
     sys = f"<<SYS>> You are completing a multiple-choice task. Answer only 'ending1' or 'ending2'.<</SYS>>\n[INST]"
     u = f'''User: '{q}'{shots}
 Which of the following corresponds to the meaning of the phrase above, enclosed in single quotes?
@@ -107,17 +112,18 @@ Respond only 'ending1' or 'ending2'.
 Assistant: '''
     return sys + u
 
-def eval_model(model, tokenizer, dataset, name, n = 0):
+def eval_model(model, tokenizer, dataset, name, mname, n = 0):
     model.eval()
     correct = 0
     total = 0
     preds = []
-    for batch in dataset.iterrows():
+    for i, batch in dataset.iterrows():
         with torch.no_grad():
-            inputs = tokenizer(prompt_template(batch, n), return_tensors = "pt")
-            outputs = model.generate(inputs.input_ids, max_length = 20)
+            inputs = tokenizer(prompt_template(batch, n), return_tensors = "pt").to("cuda")
+            outputs = model.generate(inputs.input_ids, max_new_tokens = 20)
             predictions = tokenizer.batch_decode(outputs, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         references = batch["labels"]
+        del inputs; 
         if "ending1" in predictions:
             pred = 0
         else:
@@ -125,7 +131,9 @@ def eval_model(model, tokenizer, dataset, name, n = 0):
         total += 1
         correct += pred == references
         preds.append(pred)
-    np.save(f"preds_{name}", preds)
+        del predictions
+        del outputs
+    np.save(f"preds_{name}_{model_short(mname)}", preds)
 
     return correct / total
 
@@ -136,8 +144,9 @@ def main(args=None):
         args = vars(args)
     # or else there will be inconsistencies between hyperparam runs.
     args = copy.deepcopy(args)
-    print("PYTHON PATH", args["model_name_or_path"])
-
+    if os.path.exists(f"preds_{args['test_dir']}_{args['test_file']}_{model_short(args['model_name_or_path'])}.npy"):
+        print("already exists")
+        return
     dataset = pd.read_csv(f"{args['test_dir']}/{args['test_file']}.csv")
 
     if "llama" in args["model_name_or_path"]:
@@ -153,7 +162,7 @@ def main(args=None):
     else:
         model = Qwen2ForCausalLM.from_pretrained(args["model_name_or_path"])
         tok = AutoTokenizer.from_pretrained(args["model_name_or_path"])
-    acc = eval_model(model, tok, dataset, f"{args['test_dir']}_{args['test_file']}", n = args['n'])
+    acc = eval_model(model, tok, dataset, f"{args['test_dir']}_{args['test_file']}", args["model_name_or_path"], n = args['n'])
     print(f"{args['model_name_or_path']}, {args['test_dir']}_{args['test_file']}: {acc}")
 
 if __name__ == "__main__":
