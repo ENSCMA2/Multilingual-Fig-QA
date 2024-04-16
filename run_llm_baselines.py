@@ -91,7 +91,7 @@ def prompt_template(batch, lang, n = 0):
     if n == 0:
         shots = ""
     else:
-        td = f"data/addition_data_winogrand/{lang}/train/{lang}_{n}.csv"
+        td = f"data/addition_data_winogrand/train/{lang}/{lang}_{n}.csv"
         relevant = pd.read_csv(td).iloc[-2 * n:, :]
         strings = []
         for i, tem in relevant.iterrows():
