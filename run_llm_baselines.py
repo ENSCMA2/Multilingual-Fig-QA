@@ -84,14 +84,14 @@ def parse_args():
     args = parser.parse_args()
     return args
 
-def prompt_template(batch, n = 0):
+def prompt_template(batch, tf, n = 0):
     q = batch["startphrase"]
     o1 = batch["ending1"]
     o2 = batch["ending2"]
     if n == 0:
         shots = ""
     else:
-        td = f"data/addition_data_winogrand/{args['test_file']}/train/{args['test_file']}_{n}.csv"
+        td = f"data/addition_data_winogrand/{tf}/train/{tf}_{n}.csv"
         relevant = pd.read_csv(td).iloc[-2 * n:, :]
         strings = []
         for i, tem in relevant.iterrows():
@@ -112,14 +112,14 @@ Respond only 'ending1' or 'ending2'.
 Assistant: '''
     return sys + u
 
-def eval_model(model, tokenizer, dataset, name, mname, n = 0):
+def eval_model(model, tokenizer, dataset, name, fname, mname, n = 0):
     model.eval()
     correct = 0
     total = 0
     preds = []
     for i, batch in dataset.iterrows():
         with torch.no_grad():
-            inputs = tokenizer(prompt_template(batch, n), return_tensors = "pt").to("cuda")
+            inputs = tokenizer(prompt_template(batch, fname, n), return_tensors = "pt").to("cuda")
             outputs = model.generate(inputs.input_ids, max_new_tokens = 20)
             predictions = tokenizer.batch_decode(outputs, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         references = batch["labels"]
@@ -162,7 +162,7 @@ def main(args=None):
     else:
         model = Qwen2ForCausalLM.from_pretrained(args["model_name_or_path"])
         tok = AutoTokenizer.from_pretrained(args["model_name_or_path"])
-    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", args["model_name_or_path"], n = args['n'])
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", args['test_file'], args["model_name_or_path"], n = args['n'])
     print(f"{args['model_name_or_path']}, {args['test_dir']}_{args['test_file']}: {acc}")
 
 if __name__ == "__main__":
