@@ -16,7 +16,7 @@
 # TODO: average over non-degenerate seeds
 LANGS=("en_dev" "hi" "id" "jv" "kn" "su" "sw")
 
-for model in "Qwen/Qwen1.5-7B" "mistralai/Mixtral-8x7B-v0.1" "meta-llama/Llama-2-7b-hf";
+for model in "Qwen/Qwen1.5-7B" "mistralai/Mistral-7B-v0.1" "meta-llama/Llama-2-7b-hf";
 do
     echo $model;
     for lang in "en_dev" "hi" "id" "jv" "kn" "su" "sw";

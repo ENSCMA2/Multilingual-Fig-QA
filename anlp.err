@@ -1,0 +1,516 @@
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
+  File "/home/khalevy/Multilingual-Fig-QA/run_llm_baselines.py", line 166
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+                                                                                                ^
+SyntaxError: invalid syntax
