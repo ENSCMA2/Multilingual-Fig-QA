@@ -27,5 +27,55 @@ sw
 already exists
 mistralai/Mistral-7B-v0.1
 en_dev
+mistralai/Mistral-7B-v0.1, langdata_en_dev: 0.5
 hi
+mistralai/Mistral-7B-v0.1, langdata_hi: 0.5
 id
+mistralai/Mistral-7B-v0.1, langdata_id: 0.5
+jv
+mistralai/Mistral-7B-v0.1, langdata_jv: 0.5
+kn
+mistralai/Mistral-7B-v0.1, langdata_kn: 0.5
+su
+mistralai/Mistral-7B-v0.1, langdata_su: 0.5
+sw
+mistralai/Mistral-7B-v0.1, langdata_sw: 0.5
+hi
+mistralai/Mistral-7B-v0.1, translate-test_hi: 0.5
+id
+mistralai/Mistral-7B-v0.1, translate-test_id: 0.5
+jv
+mistralai/Mistral-7B-v0.1, translate-test_jv: 0.5
+kn
+mistralai/Mistral-7B-v0.1, translate-test_kn: 0.5
+su
+mistralai/Mistral-7B-v0.1, translate-test_su: 0.5
+sw
+mistralai/Mistral-7B-v0.1, translate-test_sw: 0.5004549590536852
+meta-llama/Llama-2-7b-hf
+en_dev
+meta-llama/Llama-2-7b-hf, langdata_en_dev: 0.5
+hi
+meta-llama/Llama-2-7b-hf, langdata_hi: 0.5
+id
+meta-llama/Llama-2-7b-hf, langdata_id: 0.5
+jv
+meta-llama/Llama-2-7b-hf, langdata_jv: 0.5
+kn
+meta-llama/Llama-2-7b-hf, langdata_kn: 0.5
+su
+meta-llama/Llama-2-7b-hf, langdata_su: 0.5
+sw
+meta-llama/Llama-2-7b-hf, langdata_sw: 0.5
+hi
+meta-llama/Llama-2-7b-hf, translate-test_hi: 0.5
+id
+meta-llama/Llama-2-7b-hf, translate-test_id: 0.5
+jv
+meta-llama/Llama-2-7b-hf, translate-test_jv: 0.5
+kn
+meta-llama/Llama-2-7b-hf, translate-test_kn: 0.5
+su
+meta-llama/Llama-2-7b-hf, translate-test_su: 0.5
+sw
+meta-llama/Llama-2-7b-hf, translate-test_sw: 0.5004549590536852
