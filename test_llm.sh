@@ -29,13 +29,13 @@ do
         echo $lang;
         python run_llm_baselines.py --test_file $lang --test_dir translate-test --n 0 --model_name_or_path $model
     done
-    for lang in "hi" "id" "jv" "kn" "su" "sw";
-    do
-        echo $lang;
-        for n in 2 4 6 8 10;
-        do
-           echo $lang\_$n;
-           python run_llm_baselines.py --test_file $lang\_$n --test_dir data/addition_data_winogrand/test/$lang --n $n --model_name_or_path $model 
-        done
-    done
+#    for lang in "hi" "id" "jv" "kn" "su" "sw";
+#    do
+#        echo $lang;
+#        for n in 2 4 6 8 10;
+#        do
+#           echo $lang\_$n;
+#           python run_llm_baselines.py --test_file $lang\_$n --test_dir data/addition_data_winogrand/test/$lang --n $n --model_name_or_path $model 
+#        done
+#   done
 done
