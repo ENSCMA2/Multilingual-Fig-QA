@@ -144,7 +144,7 @@ def main(args=None):
         args = vars(args)
     # or else there will be inconsistencies between hyperparam runs.
     args = copy.deepcopy(args)
-    lang = args["test_dir"].split("_")[0]
+    lang = args["test_file"].split("_")[0]
     if os.path.exists(f"preds_{args['test_dir']}_{args['test_file']}_{model_short(args['model_name_or_path'])}.npy"):
         print("already exists")
         return
@@ -163,7 +163,7 @@ def main(args=None):
     else:
         model = Qwen2ForCausalLM.from_pretrained(args["model_name_or_path"])
         tok = AutoTokenizer.from_pretrained(args["model_name_or_path"])
-    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", args["model_name_or_path"], n = args['n'], lang = lang)
     print(f"{args['model_name_or_path']}, {args['test_dir']}_{args['test_file']}: {acc}")
 
 if __name__ == "__main__":
