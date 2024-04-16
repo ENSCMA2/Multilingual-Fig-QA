@@ -162,7 +162,7 @@ def main(args=None):
     else:
         model = Qwen2ForCausalLM.from_pretrained(args["model_name_or_path"])
         tok = AutoTokenizer.from_pretrained(args["model_name_or_path"])
-    acc = eval_model(model, tok, dataset, f"{args['test_dir']}_{args['test_file']}", args["model_name_or_path"], n = args['n'])
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", args["model_name_or_path"], n = args['n'])
     print(f"{args['model_name_or_path']}, {args['test_dir']}_{args['test_file']}: {acc}")
 
 if __name__ == "__main__":
