@@ -91,7 +91,7 @@ def prompt_template(batch, lang, n = 0):
     if n == 0:
         shots = ""
     else:
-        td = f"data/addition_data_winogrand/{lang}/train/{lang}_{n}.csv"
+        td = f"data/addition_data_winogrand/train/{lang}/{lang}_{n}.csv"
         relevant = pd.read_csv(td).iloc[-2 * n:, :]
         strings = []
         for i, tem in relevant.iterrows():
@@ -121,9 +121,9 @@ def eval_model(model, tokenizer, dataset, name, mname, n = 0, lang = None):
         with torch.no_grad():
             inputs = tokenizer(prompt_template(batch, lang, n), return_tensors = "pt").to("cuda")
             outputs = model.generate(inputs.input_ids, max_new_tokens = 20)
+            del inputs
             predictions = tokenizer.batch_decode(outputs, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         references = batch["labels"]
-        del inputs; 
         if "ending1" in predictions:
             pred = 0
         else:
@@ -144,7 +144,7 @@ def main(args=None):
         args = vars(args)
     # or else there will be inconsistencies between hyperparam runs.
     args = copy.deepcopy(args)
-    lang = args["test_dir"].split("_")[0]
+    lang = args["test_file"].split("_")[0]
     if os.path.exists(f"preds_{args['test_dir']}_{args['test_file']}_{model_short(args['model_name_or_path'])}.npy"):
         print("already exists")
         return
@@ -160,10 +160,11 @@ def main(args=None):
         model = AutoModelForCausalLM.from_pretrained(args["model_name_or_path"],
                                                      device_map="auto")
         tok = AutoTokenizer.from_pretrained(args["model_name_or_path"])
+        tok.pad_token_id = tok.eos_token_id
     else:
         model = Qwen2ForCausalLM.from_pretrained(args["model_name_or_path"])
         tok = AutoTokenizer.from_pretrained(args["model_name_or_path"])
-    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", , args["model_name_or_path"], n = args['n'], lang = lang)
+    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", args["model_name_or_path"], n = args['n'], lang = lang)
     print(f"{args['model_name_or_path']}, {args['test_dir']}_{args['test_file']}: {acc}")
 
 if __name__ == "__main__":
