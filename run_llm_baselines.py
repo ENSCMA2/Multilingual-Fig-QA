@@ -36,7 +36,7 @@ from datasets import load_dataset
 import evaluate
 from torch.utils.data import DataLoader
 from tqdm.auto import tqdm
-
+import time
 import transformers
 from accelerate import *
 from accelerate.utils import set_seed
@@ -52,16 +52,24 @@ from transformers import (
     default_data_collator,
     get_scheduler,
 )
+from openai import OpenAI
+import os
 from transformers import LlamaForCausalLM, LlamaTokenizer, Qwen2ForCausalLM, AutoModelForCausalLM
 from transformers.utils import PaddingStrategy, get_full_repo_name
 import pdb
 import re
-
+import replicate
+import requests
+TOGETHER_API_KEY = os.environ.get("TOGETHER_KEY")
+client = OpenAI(
+  api_key=TOGETHER_API_KEY,
+  base_url='https://api.together.xyz/v1',
+)
 def model_short(mname):
     if "llama" in mname:
         return "llama"
     if "mistral" in mname:
-        return "mixtral"
+        return "mistral"
     return "qwen2"
 
 ALL_LANGS = ["en", "hi", "id", "jv", "kn", "su", "sw", None]
@@ -102,40 +110,51 @@ ending2: {tem['ending2']}
             strings.append(string)
         shots = f'''\nHere are some examples of phrases, possible endings, and which ending corresponds to the meaning of each phrase.{''.join(strings)}
 Now, it's your turn.'''
-    sys = f"<<SYS>> You are completing a multiple-choice task. Answer only 'ending1' or 'ending2'.<</SYS>>\n[INST]"
-    u = f'''User: '{q}'{shots}
+    sys = f"You are completing a multiple-choice task. Answer with a single integer."
+    u = f''''{q}'{shots}
 Which of the following corresponds to the meaning of the phrase above, enclosed in single quotes?
-ending1: {o1}
-ending2: {o2}
-Respond only 'ending1' or 'ending2'.
-[/INST]
-Assistant: '''
-    return sys + u
+1: {o1}
+2: {o2}
+Respond with a single number: 1 or 2.'''
+    return sys, u
 
-def eval_model(model, tokenizer, dataset, name, mname, n = 0, lang = None):
-    model.eval()
+def eval_model(model, dataset, name, mname, n = 0, lang = None):
     correct = 0
     total = 0
     preds = []
+    if os.path.exists(f"preds_{name}_{model_short(mname)}"):
+        preds = np.load(f"preds_{name}_{model_short(mname)}").tolist()
     for i, batch in dataset.iterrows():
-        with torch.no_grad():
-            prompt = prompt_template(batch, lang, n)
-            inputs = tokenizer(prompt, return_tensors = "pt").to("cuda")
-            outputs = model.generate(inputs.input_ids, max_new_tokens = 20)
-            del inputs
-            predictions = tokenizer.batch_decode(outputs, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
-        references = batch["labels"]
-        print(prompt)
-        print(predictions)
-        if "ending1" in predictions:
-            pred = 0
-        else:
-            pred = 1
-        total += 1
-        correct += pred == references
-        preds.append(pred)
-        del predictions
-        del outputs
+        if i >= len(preds):
+            sys, u = prompt_template(batch, lang, n)
+            predictions = client.chat.completions.create(
+                              messages=[
+                                {
+                                  "role": "system",
+                                  "content": sys,
+                                },
+                                {
+                                  "role": "user",
+                                  "content": u,
+                                }
+                              ],
+                              model=model,
+                              max_tokens = 20,
+                            ).choices[0].message.content
+            print(i, dataset.shape[0])
+            print("SYS", sys)
+            print("U", u)
+            print("PRED", predictions)
+            references = batch["labels"]
+            if "1" in predictions.lower():
+                pred = 0
+            else:
+                pred = 1
+            total += 1
+            correct += pred == references
+            preds.append(pred)
+            np.save(f"preds_{name}_{model_short(mname)}", preds)
+            time.sleep(0.5)
     np.save(f"preds_{name}_{model_short(mname)}", preds)
 
     return correct / total
@@ -148,26 +167,14 @@ def main(args=None):
     # or else there will be inconsistencies between hyperparam runs.
     args = copy.deepcopy(args)
     lang = args["test_file"].split("_")[0]
-    if os.path.exists(f"preds_{args['test_dir']}_{args['test_file']}_{model_short(args['model_name_or_path'])}.npy"):
+    
+    dataset = pd.read_csv(f"{args['test_dir']}/{args['test_file']}.csv")
+    rf = f"preds_{args['test_dir']}_{args['test_file']}_{model_short(args['model_name_or_path'])}.npy"
+    if os.path.exists(rf) and len(np.load(rf)) >= dataset.shape[0]:
         print("already exists")
         return
-    dataset = pd.read_csv(f"{args['test_dir']}/{args['test_file']}.csv")
 
-    if "llama" in args["model_name_or_path"]:
-        model = LlamaForCausalLM.from_pretrained(args["model_name_or_path"], 
-                                                     torch_dtype=torch.float32, 
-                                                     device_map='auto')
-        tok = LlamaTokenizer.from_pretrained(args["model_name_or_path"])
-        tok.pad_token_id = tok.eos_token_id
-    elif "mistral" in args["model_name_or_path"]:
-        model = AutoModelForCausalLM.from_pretrained(args["model_name_or_path"],
-                                                     device_map="auto")
-        tok = AutoTokenizer.from_pretrained(args["model_name_or_path"])
-        tok.pad_token_id = tok.eos_token_id
-    else:
-        model = Qwen2ForCausalLM.from_pretrained(args["model_name_or_path"])
-        tok = AutoTokenizer.from_pretrained(args["model_name_or_path"])
-    acc = eval_model(model.to("cuda"), tok, dataset, f"{args['test_dir']}_{args['test_file']}", args["model_name_or_path"], n = args['n'], lang = lang)
+    acc = eval_model(args["model_name_or_path"], dataset, f"{args['test_dir']}_{args['test_file']}", args["model_name_or_path"], n = args['n'], lang = lang)
     print(f"{args['model_name_or_path']}, {args['test_dir']}_{args['test_file']}: {acc}")
 
 if __name__ == "__main__":
