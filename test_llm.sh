@@ -4,7 +4,7 @@
 #SBATCH --error=anlp.err
 #SBATCH --partition=long
 #SBATCH --nodes=1
-#SBATCH --gres=gpu:1
+#SBATCH --gres=gpu:2
 #SBATCH --ntasks-per-node=1
 #SBATCH --mem=80GB
 #SBATCH --cpus-per-task=16
@@ -16,7 +16,8 @@
 # TODO: average over non-degenerate seeds
 LANGS=("en_dev" "hi" "id" "jv" "kn" "su" "sw")
 
-for model in "Qwen/Qwen1.5-7B" "mistralai/Mistral-7B-v0.1" "meta-llama/Llama-2-7b-hf";
+for model in "Qwen/Qwen1.5-7B";
+	# "mistralai/Mistral-7B-v0.1" "meta-llama/Llama-2-7b-hf"
 do
     echo $model;
     for lang in "en_dev" "hi" "id" "jv" "kn" "su" "sw";

@@ -119,11 +119,14 @@ def eval_model(model, tokenizer, dataset, name, mname, n = 0, lang = None):
     preds = []
     for i, batch in dataset.iterrows():
         with torch.no_grad():
-            inputs = tokenizer(prompt_template(batch, lang, n), return_tensors = "pt").to("cuda")
+            prompt = prompt_template(batch, lang, n)
+            inputs = tokenizer(prompt, return_tensors = "pt").to("cuda")
             outputs = model.generate(inputs.input_ids, max_new_tokens = 20)
             del inputs
             predictions = tokenizer.batch_decode(outputs, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         references = batch["labels"]
+        print(prompt)
+        print(predictions)
         if "ending1" in predictions:
             pred = 0
         else:
