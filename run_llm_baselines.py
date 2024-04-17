@@ -124,6 +124,7 @@ def eval_model(model, tokenizer, dataset, name, mname, n = 0, lang = None):
             del inputs
             predictions = tokenizer.batch_decode(outputs, skip_special_tokens=True, clean_up_tokenization_spaces=False)[0]
         references = batch["labels"]
+        print(prediction)
         if "ending1" in predictions:
             pred = 0
         else:
