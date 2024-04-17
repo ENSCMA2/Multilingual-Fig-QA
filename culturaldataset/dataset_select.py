@@ -20,7 +20,7 @@ def tokenize(text: str, lang: str):
 def bm25_score_docs(tokenized_queries: list[list[str]], tokenized_example_pool: list[list[str]]):
     scores_acc = np.zeros(len(tokenized_example_pool))
     bm25 = BM25Okapi(tokenized_example_pool)
-    for i, tokenized_query in tqdm(enumerate(tokenized_queries)):
+    for i, tokenized_query in tqdm(enumerate(tokenized_queries), total=len(tokenized_queries)):
         scores_acc += bm25.get_scores(tokenized_query)
     scores_acc /= len(tokenized_example_pool)
     return scores_acc
@@ -53,19 +53,21 @@ def gt_args():
     parser.add_argument('--scorer', type=str, choices=['bm25', 'rouge'], default='bm25')
     parser.add_argument('--resultsize', type=int, default=50000)
     parser.add_argument('--lang', type=str, choices=["hi", "id", "jv", "kn", "su", "sw"], default='su')
-    parser.add_argument('--dev', action="store_true", default=True)
+    parser.add_argument('--dev', action="store_true")
     args = parser.parse_args()
     print("args:", args)
 
 def mk_dataset():
     # load c4
 
+    print('🕰️ loading c4...')
     c4 = load_dataset("allenai/c4", args.lang)
     # c4_dev_dict = c4.data['validation'].to_pydict()
     c4_train_dict = c4.data['train'].to_pydict()
 
     # load mabl
 
+    print('🕰️ loading mabl...')
     mabl_df = pd.read_csv(f'../langdata/{args.lang}.csv')
     start_phrases = mabl_df['startphrase'].tolist()
     ending1s = mabl_df['ending1'].tolist()
@@ -75,14 +77,18 @@ def mk_dataset():
     # make query and pool
 
     if args.dev:
+        print("WARN: development mode")
         queries = figqa_examples[:100]
         example_pool = c4_train_dict['text'][:1000]
     else:
         queries = figqa_examples
         example_pool = c4_train_dict['text']
-    tokenized_example_pool = [tokenize(text, args.lang) for text in example_pool]
-    tokenized_queries = [tokenize(text, args.lang) for text in queries]
+        
+    print('🕰️ tokenizing...')
+    tokenized_queries = [tokenize(text, args.lang) for text in tqdm(queries)]
+    tokenized_example_pool = [tokenize(text, args.lang) for text in tqdm(example_pool)]
     
+    print('🕰️ scoring...')
     match args.scorer:
         case 'bm25':
             score_arr = bm25_score_docs(tokenized_queries, tokenized_example_pool)
@@ -100,15 +106,16 @@ def mk_dataset():
     example_list = list(map(lambda x: x['example'], sorted_scored_examples[:args.resultsize]))
     curated_hf_dataset = Dataset.from_dict({'score': scores_list, 'example': example_list})
     
-    curated_hf_dataset.save_to_disk(f'select_datasets/{args.lang}/rouge{args.resultsize}')
+    dev_indicator = 'dev/' if args.dev else ''
+    
+    curated_hf_dataset.save_to_disk(f'select_datasets/{dev_indicator}{args.lang}/{args.scorer}-{args.resultsize}')
     
     sns.histplot(scores_list)
     plt.title("score distribution among selected examples")
     plt.xlabel("Score")
     plt.ylabel("Frequency")
-    plt.xscale('log')
     plt.yscale('log')
-    plt.savefig(f'select_datasets/{args.lang}/rouge{args.resultsize}/score_dist.png')
+    plt.savefig(f'select_datasets/{dev_indicator}{args.lang}/{args.scorer}-{args.resultsize}/score_dist.png')
 
 if __name__ == '__main__':
     gt_args()
