@@ -52,7 +52,7 @@ def gt_args():
     parser = argparse.ArgumentParser(description='Make dataset')
     parser.add_argument('--scorer', type=str, choices=['bm25', 'rouge'], default='bm25')
     parser.add_argument('--resultsize', type=int, default=50000)
-    parser.add_argument('--lang', type=str, choices=["hi", "id", "jv", "kn", "su", "sw"], default='su')
+    parser.add_argument('--lang', type=str, choices=["hi", "id", "jv", "kn", "su", "sw", "yo"], default='su')
     parser.add_argument('--dev', action="store_true")
     args = parser.parse_args()
     print("args:", args)
