@@ -40,10 +40,10 @@ args = {
 
 toy_figqa_dataset = DatasetDict({
     'train': Dataset.from_dict({
-        'labels': [0,0,1,1], 
-        'startphrase': ['The cat said meow', "Cats say meow", 'The cat said woof', 'Cats generally bark'],
-        'ending1': ['meow', "meow", 'meow', 'meow'],
-        'ending2': ['woof', "woof", 'woof', 'woof'],
+        'labels': [0,0,1,1]*20,
+        'startphrase': ['The cat said meow', "Cats say meow", 'The cat said woof', 'Cats generally bark']*20,
+        'ending1': ['meow', "meow", 'meow', 'meow']*20,
+        'ending2': ['woof', "woof", 'woof', 'woof']*20,
     }),
     # 'val': Dataset.from_dict({'labels': [1, 0]*20, 'input': ['A sound cats like to make is meow', 'A sound cats like to make is woof']*20})
     'val': Dataset.from_dict({
@@ -96,10 +96,11 @@ def fill_mask(args, model, tokenizer, input_text: str):
     for i, token in enumerate(top_tokens):
         print(f"pred {i}: {input_text.replace(tokenizer.mask_token, f'_{tokenizer.decode([token])}_')}")
 
-def mk_corpus(args, tokenizer):
-    # corpus_unsplit = load_dataset("chaosarium/c4-cultural-extract", revision=args['cultural_corpus'])
-    # corpus_unsplit['train'] = corpus_unsplit['train'].select(range(100)) # TODO just for development
-    corpus_unsplit = toy_corpus
+def mk_corpus(args, tokenizer, toy: bool = True):
+    if not toy:
+        corpus_unsplit = load_dataset("chaosarium/c4-cultural-extract", revision=args['cultural_corpus'])
+    else:
+        corpus_unsplit = toy_corpus
     corpus = corpus_unsplit["train"].train_test_split(test_size=0.1, seed=42)
     corpus['val'] = corpus.pop('test')
 
@@ -218,14 +219,16 @@ class DataCollatorForMultipleChoice: # from multilingual figqa
         return batch
 
 
-def mk_figqa_dataset(args, tokenizer):
-    data_files = {
-        'train': '../langdata/en_train.csv',
-        'val': '../langdata/en_dev.csv',
-        'test': '../langdata/su.csv',
-    }
-    # raw_datasets = load_dataset('csv', data_files=data_files)
-    raw_datasets = toy_figqa_dataset
+def mk_figqa_dataset(args, tokenizer, toy: bool = True):
+    if not toy:
+        data_files = {
+            'train': '../langdata/en_train.csv',
+            'val': '../langdata/en_dev.csv',
+            'test': '../langdata/su.csv',
+        }
+        raw_datasets = load_dataset('csv', data_files=data_files)
+    else:
+        raw_datasets = toy_figqa_dataset
     
     def preprocess_function(examples):
         column_names = ['startphrase', 'ending1', 'ending2', 'labels']
