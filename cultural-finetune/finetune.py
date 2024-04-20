@@ -29,7 +29,6 @@ import random
 from tqdm import tqdm
 import os, json
 
-
 args = {
     'cultural_corpus': 'yo-bm25-10000',
     'pretrained_model': 'FacebookAI/xlm-roberta-base', 
@@ -40,15 +39,32 @@ args = {
 }
 
 toy_figqa_dataset = DatasetDict({
-    'train': Dataset.from_dict({'label': [1, 1, 0, 0]*10, 'input': ['The cat said meow', "Cats say meow", 'The cat said woof', 'Cats generally bark']*10}),
-    'val': Dataset.from_dict({'label': [1, 0]*20, 'input': ['A sound cats like to make is meow', 'A sound cats like to make is woof']*20})
+    'train': Dataset.from_dict({
+        'labels': [0,0,1,1], 
+        'startphrase': ['The cat said meow', "Cats say meow", 'The cat said woof', 'Cats generally bark'],
+        'ending1': ['meow', "meow", 'meow', 'meow'],
+        'ending2': ['woof', "woof", 'woof', 'woof'],
+    }),
+    # 'val': Dataset.from_dict({'labels': [1, 0]*20, 'input': ['A sound cats like to make is meow', 'A sound cats like to make is woof']*20})
+    'val': Dataset.from_dict({
+        'labels': [0,0,1,1], 
+        'startphrase': ['The cat said meow', "Cats say meow", 'The cat said woof', 'Cats generally bark'],
+        'ending1': ['meow', "meow", 'meow', 'meow'],
+        'ending2': ['woof', "woof", 'woof', 'woof'],
+    }),
+    'test': Dataset.from_dict({
+        'labels': [0,1], 
+        'startphrase': ['A sound cats like to make is meow', "A sound cats like to make is woof"],
+        'ending1': ['meow', "meow"],
+        'ending2': ['woof', "woof"],
+    })
+    # Dataset.from_dict({'label': [1, 0]*20, 'input': ['A sound cats like to make is meow', 'A sound cats like to make is woof']*20})
 })
 
 toy_corpus = DatasetDict({
     'train': Dataset.from_dict({'score': [0.2, 0.1, 0.05]*100, 'example': ['The cat said meow', "Cats say meow", 'Tokenizers are so meow']*100}),
     # 'val': Dataset.from_dict({'score': [0.2]*20, 'example': ['A sound cats like to make is meow']*20})
 })
-
 
 def mk_tokenizer(args):
     tokenizer = AutoTokenizer.from_pretrained(args['pretrained_model'])
@@ -205,10 +221,11 @@ class DataCollatorForMultipleChoice: # from multilingual figqa
 def mk_figqa_dataset(args, tokenizer):
     data_files = {
         'train': '../langdata/en_train.csv',
-        'validation': '../langdata/en_dev.csv',
+        'val': '../langdata/en_dev.csv',
         'test': '../langdata/su.csv',
     }
-    raw_datasets = load_dataset('csv', data_files=data_files)
+    # raw_datasets = load_dataset('csv', data_files=data_files)
+    raw_datasets = toy_figqa_dataset
     
     def preprocess_function(examples):
         column_names = ['startphrase', 'ending1', 'ending2', 'labels']
@@ -254,8 +271,8 @@ def mk_figqa_dataset(args, tokenizer):
     print('figqa data looks like:')
     print('train:', processed_figqa_datasets['train'][0])
     print('decoded:', list(map(tokenizer.decode, processed_figqa_datasets['train'][0]['input_ids'])))
-    print('dev:', processed_figqa_datasets['validation'][0])
-    print('decoded:', list(map(tokenizer.decode, processed_figqa_datasets['validation'][0]['input_ids'])))
+    print('val:', processed_figqa_datasets['val'][0])
+    print('decoded:', list(map(tokenizer.decode, processed_figqa_datasets['val'][0]['input_ids'])))
     print('test:', processed_figqa_datasets['test'][0])
     print('decoded:', list(map(tokenizer.decode, processed_figqa_datasets['test'][0]['input_ids'])))
     
@@ -265,3 +282,66 @@ def mk_figqa_dataset(args, tokenizer):
     )
     
     return processed_figqa_datasets, figqa_data_collator
+
+# runs one epoch of training
+def train_model(train_dataloader, model, accelerator, optimizer, lr_scheduler, args, completed_steps, checkpointing_steps, eval_dataloader=None):
+    model.train()
+    total_loss = 0
+    for step, batch in tqdm(enumerate(train_dataloader), total=len(train_dataloader)):
+        # We need to skip steps until we reach the resumed step
+        # if args["resume_from_checkpoint"] and epoch == starting_epoch:
+        #     if resume_step is not None and step < resume_step:
+        #         completed_steps += 1
+        #         continue
+        outputs = model(input_ids=batch["input_ids"], 
+                        attention_mask=batch["attention_mask"],
+                        labels=batch["labels"])
+        loss = outputs.loss
+        # We keep track of the loss at each epoch
+        total_loss += loss.detach().float()
+        accelerator.backward(loss)
+        
+        optimizer.step()
+        lr_scheduler.step()
+        optimizer.zero_grad()
+        completed_steps += 1
+
+        if isinstance(checkpointing_steps, int):
+            if completed_steps % checkpointing_steps == 0:
+                output_dir = f"step_{completed_steps }"
+                if args["output_dir"] is not None:
+                    output_dir = os.path.join(args["output_dir"], output_dir)
+                accelerator.save_state(output_dir)
+
+        # if completed_steps >= args["max_train_steps"]:
+        #     break
+        
+        print(loss)
+
+    return model, loss, completed_steps
+
+# evaluate mc on dataloader
+def eval_model(model, eval_dataloader, metric, accelerator, epoch, args):
+    model.eval()
+    samples_seen = 0
+    for step, batch in enumerate(eval_dataloader):
+        with torch.no_grad():
+            outputs = model(**batch)
+        predictions = outputs.logits.argmax(dim=-1)
+        predictions, references = accelerator.gather((predictions, batch["labels"]))
+        # If we are in a multiprocess environment, the last batch has duplicates
+        if accelerator.num_processes > 1:
+            if step == len(eval_dataloader) - 1:
+                predictions = predictions[: len(eval_dataloader.dataset) - samples_seen]
+                references = references[: len(eval_dataloader.dataset) - samples_seen]
+            else:
+                samples_seen += references.shape[0]
+        metric.add_batch(
+            predictions=predictions,
+            references=references,
+        )
+
+    eval_metric = metric.compute()
+    accelerator.print(f"epoch {epoch}: {eval_metric}")
+
+    return eval_metric
