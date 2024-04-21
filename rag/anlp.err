@@ -11,28 +11,3 @@ You can remove this warning by passing 'token=<use_auth_token>' instead.
 Repo card metadata block was not found. Setting CardData to empty.
 Using the latest cached version of the dataset since chaosarium/c4-cultural-extract couldn't be found on the Hugging Face Hub
 Found the latest cached dataset configuration 'default' at /home/khalevy/.cache/huggingface/datasets/chaosarium___c4-cultural-extract/default/0.0.0/60b269c80d6e0517a3dca4a4f0e4b9b3fe9c671e (last modified on Sun Apr 21 16:25:11 2024).
-Traceback (most recent call last):
-  File "/home/khalevy/Multilingual-Fig-QA/rag/main.py", line 174, in <module>
-    retriever = mk_retriever(args, dataset, False)
-                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/khalevy/Multilingual-Fig-QA/rag/main.py", line 45, in mk_retriever
-    return BM25Retriever(dataset=dataset)
-           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/retrieval.py", line 42, in __init__
-    self.bm25_retriever = langchain_community.retrievers.BM25Retriever.from_documents(self.docs, k=k)
-                                                                                                   ^
-NameError: name 'k' is not defined
-No CUDA runtime is found, using CUDA_HOME='/usr/local/cuda'
-/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain/embeddings/__init__.py:29: LangChainDeprecationWarning: Importing embeddings from langchain is deprecated. Importing from langchain will no longer be supported as of langchain==0.2.0. Please import from langchain-community instead:
-
-`from langchain_community.embeddings import HuggingFaceEmbeddings`.
-
-To install langchain-community run `pip install -U langchain-community`.
-  warnings.warn(
-/home/khalevy/miniconda3/lib/python3.11/site-packages/datasets/load.py:2516: FutureWarning: 'use_auth_token' was deprecated in favor of 'token' in version 2.14.0 and will be removed in 3.0.0.
-You can remove this warning by passing 'token=<use_auth_token>' instead.
-  warnings.warn(
-Repo card metadata block was not found. Setting CardData to empty.
-Using the latest cached version of the dataset since chaosarium/c4-cultural-extract couldn't be found on the Hugging Face Hub
-Found the latest cached dataset configuration 'default' at /home/khalevy/.cache/huggingface/datasets/chaosarium___c4-cultural-extract/default/0.0.0/60b269c80d6e0517a3dca4a4f0e4b9b3fe9c671e (last modified on Sun Apr 21 16:25:11 2024).
-slurmstepd: error: *** JOB 243635 ON shire-1-6 CANCELLED AT 2024-04-21T17:46:45 ***
