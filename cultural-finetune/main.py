@@ -148,7 +148,7 @@ def run_interleaved_train_loop(
         # 2 > validate
         model.eval()
         
-        if interleave_probs[0] != 0.0:
+        if True: # always evaluate perplexity?
             # print('🧪 valuating mlm...')
             # model.fill_mask(f"The cat said {tokenizer.decode(tokenizer.mask_token_id)}.")
             mlm_losses = []
