@@ -137,12 +137,17 @@ def do_evaluation(generator: TogetherGeneratorBase, args):
     
     return
 
+def log(txt):
+    with open("log.txt", "w") as o:
+        o.write(f"{txt}\n")
+
 def do_retrieval(pipeline: RAGPipeline, args):
     output_dir = f'../experiment/{args.generator.replace("/", "-")}/{args.testset}/{args.lang}'
     if not os.path.exists(f"{output_dir}/retrieval_acc.pkl"):
         testset = pd.read_csv(f"../{args.testset}/{args.lang}.csv")
         retrieval_acc = []
         for i, entry in testset.iterrows():
+            start = time.time()
             print(i)
             Q, A = prompt_template(entry), entry['labels']
             print(Q)
@@ -152,6 +157,8 @@ def do_retrieval(pipeline: RAGPipeline, args):
                 **entry,
                 **retrieval_res,
             })
+            end = time.time() - start
+            log(i, end)
             
         print(output_dir)
         if not os.path.exists(output_dir):
