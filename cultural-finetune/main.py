@@ -12,25 +12,35 @@ import wandb
 def gt_args():
     global args
     parser = argparse.ArgumentParser(description='Make dataset')
-    parser.add_argument('--corpus_truncate', type=int, default=500)
-    parser.add_argument('--num_interleaved_epochs', type=int, default=3)
-    parser.add_argument('--num_corpus_epochs', type=int, default=3)
-    parser.add_argument('--num_figqa_epochs', type=int, default=3)
-    parser.add_argument('--steps_per_interleaved_epoch', type=int, default=30)
     parser.add_argument('--pretrained_model', type=str, choices=['xlm-roberta-base', 'bert-base-multilingual-cased', 'xlm-roberta-large'], default='xlm-roberta-base')
+    parser.add_argument('--cultural_corpus', type=str, choices=['su-bm25-50000', 'jv-bm25-50000', 'yo-bm25-10000', 'kn-bm25-50000', 'sw-bm25-50000'], default='su-bm25-50000')
+    parser.add_argument('--lang', type=str, choices=["hi", "id", "jv", "kn", "su", "sw", "yo"], default='su')
+    
+    parser.add_argument('--corpus_truncate', type=int, default=500)
     parser.add_argument('--corpus_chunk_size', type=int, default=256)
     parser.add_argument('--mask_probability', type=float, default=0.15)
-    parser.add_argument('--lr', type=float, default=1e-4)
+    
+    parser.add_argument('--num_corpus_epochs', type=int, default=3)
+    parser.add_argument('--num_interleaved_epochs', type=int, default=3)
+    parser.add_argument('--num_figqa_epochs', type=int, default=3)
+    parser.add_argument('--corpus_lr', type=float, default=1e-5)
+    parser.add_argument('--interleave_lr', type=float, default=1e-5)
+    parser.add_argument('--figqa_lr', type=float, default=1e-5)
+    parser.add_argument('--steps_per_interleaved_epoch', type=int, default=30)
+    
+    parser.add_argument('--batch_size', type=int, default=128)    
     parser.add_argument('--mc_loss_weight', type=float, default=1.0)
     parser.add_argument('--mc_sample_weight', type=float, default=0.6)
     parser.add_argument('--mlm_loss_weight', type=float, default=1.0)
-    parser.add_argument('--batch_size', type=int, default=128)    
-    parser.add_argument('--cultural_corpus', type=str, choices=['su-bm25-50000'], default='su-bm25-50000')
-    parser.add_argument('--resultsize', type=int, default=50000)
-    parser.add_argument('--lang', type=str, choices=["hi", "id", "jv", "kn", "su", "sw", "yo"], default='su')
+    
     parser.add_argument('--dev', action="store_true")
     parser.add_argument("--seed", type=int, default=None)
     args = parser.parse_args()
+    
+    if args.cultural_corpus[:2] != args.lang:
+        print("mismatched language")
+        assert False
+    
     print("args:", args)
     return args
 
@@ -75,6 +85,7 @@ def run_interleaved_train_loop(
         epochbar = tqdm(range(steps_per_epoch), unit="batch", leave=False)
         epochbar.set_description(f"Epoch {global_epoch}")
         for step in epochbar:
+            run.log({"train/lr": optimizer.param_groups[0]['lr']})
             interleave_index = torch.multinomial(torch.tensor(interleave_probs), 1).item()
             if interleave_index == 0:
                 corpus_batch = iter_next(corpus_train_iterator)
@@ -222,7 +233,7 @@ def main(args):
         entity = 'chaosarium',
         project = 'multi', 
         config=vars(args),
-        tags='corpus-interleave-figqa',
+        tags=['corpus-interleave-figqa', args.lang],
         allow_val_change=True,
     )
     global_epoch = 0
@@ -230,7 +241,7 @@ def main(args):
 
     # 4 > train corpus only
     print("⛳ 4. cultural-extract corpus training")
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.corpus_lr)
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
@@ -262,7 +273,7 @@ def main(args):
 
     # 5 > train interleaved
     print("⛳ 5. interleaved training")
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.interleave_lr)
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
@@ -294,7 +305,7 @@ def main(args):
     
     # 6 > train figqa only
     print("⛳ 6. figqa training")
-    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.figqa_lr)
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
