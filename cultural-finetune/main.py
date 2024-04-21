@@ -5,6 +5,7 @@ import math
 import argparse
 from accelerate.utils import set_seed
 import psutil
+import random
 
 def gt_args():
     global args
@@ -12,14 +13,14 @@ def gt_args():
     parser.add_argument('--corpus_truncate', type=int, default=500)
     parser.add_argument('--max_epochs', type=int, default=3)
     parser.add_argument('--steps_per_epoch', type=int, default=10)
-    parser.add_argument('--pretrained_model', type=str, choices=['xlm-roberta-base', 'bert-base-multilingual-cased'], default='xlm-roberta-base')
-    parser.add_argument('--corpus_chunk_size', type=int, default=128)
+    parser.add_argument('--pretrained_model', type=str, choices=['xlm-roberta-base', 'bert-base-multilingual-cased', 'xlm-roberta-large'], default='xlm-roberta-base')
+    parser.add_argument('--corpus_chunk_size', type=int, default=256)
     parser.add_argument('--mask_probability', type=float, default=0.15)
     parser.add_argument('--lr', type=float, default=1e-4)
     parser.add_argument('--mc_loss_weight', type=float, default=1.0)
     parser.add_argument('--mc_sample_weight', type=float, default=0.6)
     parser.add_argument('--mlm_loss_weight', type=float, default=1.0)
-    parser.add_argument('--batch_size', type=int, default=64)    
+    parser.add_argument('--batch_size', type=int, default=128)    
     parser.add_argument('--cultural_corpus', type=str, choices=['su-bm25-50000'], default='su-bm25-50000')
     parser.add_argument('--resultsize', type=int, default=50000)
     parser.add_argument('--lang', type=str, choices=["hi", "id", "jv", "kn", "su", "sw", "yo"], default='su')
@@ -48,8 +49,9 @@ def run_train_loop(
     accelerator,
     lm_corpus,
     figqa_datasets,
+    steps_per_epoch,
     interleave_probs = [0.1, 0.9],
-    steps_per_epoch = 10,
+    gradient_accumulation_steps = 8,
 ):
     corpus_train_iterator = iter(corpus_train_dataloader)
     figqa_train_iterator = iter(figqa_train_dataloader)
@@ -58,10 +60,8 @@ def run_train_loop(
         print("\n\n==========\n🔄 EPOCH: ", epoch)
         
         # 1 > train
-        model.train()
-        
         # interleave: by probability, cycle through datasets, break at max interleave step
-        
+        model.train()
         for step in range(steps_per_epoch):
             interleave_index = torch.multinomial(torch.tensor(interleave_probs), 1).item()
             if interleave_index == 0:
@@ -81,11 +81,13 @@ def run_train_loop(
                 print("\t🗳️ mc loss: ", mc_loss.item())
                 loss = args.mc_loss_weight * mc_loss
             
+            loss = loss / gradient_accumulation_steps
             accelerator.backward(loss)  
-            # loss.backward()
-            optimizer.step()
-            lr_scheduler.step()
-            optimizer.zero_grad()          
+            
+            if step % gradient_accumulation_steps == 0 or step == steps_per_epoch - 1:
+                optimizer.step()
+                lr_scheduler.step()
+                optimizer.zero_grad()
             
         # print('🏗️ training mlm...')
         # for corpus_batch in corpus_train_dataloader:
@@ -186,7 +188,7 @@ def main(args):
         name='linear',
         optimizer=optimizer,
         num_warmup_steps=0,
-        num_training_steps=300, # TODO this isn't right
+        num_training_steps=args.max_epochs*args.steps_per_epoch,
     )
     
     # 3 > train
@@ -211,8 +213,8 @@ def main(args):
         accelerator,
         lm_corpus,
         figqa_datasets,
+        steps_per_epoch = args.steps_per_epoch,
         interleave_probs = [1-args.mc_sample_weight, args.mc_sample_weight],
-        steps_per_epoch = args.steps_per_epoch
     )
     
     # 4 > test
@@ -230,5 +232,9 @@ if __name__ == '__main__':
     args = gt_args()
     if args.seed is not None:
         set_seed(args.seed)
+    else:
+        seed = random.randint(0, 4294967295)
+        set_seed(seed)
+        print(f"using seed {seed}")
 
     main(args)

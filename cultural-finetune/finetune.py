@@ -30,7 +30,7 @@ from tqdm import tqdm
 import os, json
 from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
 import torch.nn.init as init
-
+import torch.nn as nn
 
 
 toy_figqa_dataset = DatasetDict({
@@ -82,7 +82,7 @@ def mk_models(args):
 class MultiTaskModel(torch.nn.Module):
     def __init__(self, mlm_model, mc_model, tokenizer): # by claude
         super().__init__()
-        self.mc_model = mc_model
+        # self.mc_model = mc_model
         self.base_model = mc_model.base_model
         self.mlm_head = mlm_model.lm_head
         self.mc_head = mc_model.classifier
@@ -144,16 +144,23 @@ class MultiTaskModel(torch.nn.Module):
         )
         
         pooled_output = base_output[1] # 2N, H
+        # pooled_output = base_output[0][:, 0, :] # cls hidden?
         pooled_output = self.mc_dropout(pooled_output) # 2N, H
+        
+        
         mc_logits = self.mc_head(pooled_output) # 2N, 1
         # print(mc_logits)
         reshaped_mc_logits = mc_logits.view(-1, num_choices) # N, 2
-        # print(reshaped_mc_logits)
+        # print(nn.functional.softmax(reshaped_mc_logits))
         # print(batch['labels'])
         
         # loss_fct = CrossEntropyLoss()
         # mc_loss = loss_fct(reshaped_mc_logits, batch["labels"])
         # mc_logits = self.mc_head(last_hidden[:, 0, :])  # Use the [CLS] token for multiple choice
+        
+        # loss_fct = CrossEntropyLoss(reduction='none')
+        # print(loss_fct(reshaped_mc_logits, batch["labels"]))
+        
         mc_loss = torch.nn.functional.cross_entropy(reshaped_mc_logits, batch["labels"])
         return reshaped_mc_logits, mc_loss
 
