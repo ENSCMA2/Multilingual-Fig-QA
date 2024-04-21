@@ -246,7 +246,7 @@ def main(args):
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
-        num_warmup_steps=0,
+        num_warmup_steps=(args.num_corpus_epochs*len(corpus_train_dataloader))//10,
         num_training_steps=args.num_corpus_epochs*len(corpus_train_dataloader),
     )
     accelerator = Accelerator(cpu=False)
@@ -278,7 +278,7 @@ def main(args):
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
-        num_warmup_steps=0,
+        num_warmup_steps=(args.num_interleaved_epochs*args.steps_per_interleaved_epoch)//10,
         num_training_steps=args.num_interleaved_epochs*args.steps_per_interleaved_epoch,
     )
     accelerator = Accelerator(cpu=False)
@@ -310,7 +310,7 @@ def main(args):
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
-        num_warmup_steps=0,
+        num_warmup_steps=(args.num_figqa_epochs*len(figqa_train_dataloader))//10,
         num_training_steps=args.num_figqa_epochs*len(figqa_train_dataloader),
     )
     accelerator = Accelerator(cpu=False)
