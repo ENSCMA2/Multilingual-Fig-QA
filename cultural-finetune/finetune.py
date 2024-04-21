@@ -30,12 +30,14 @@ from tqdm import tqdm
 import os, json
 
 toy_args = {
-    'cultural_corpus': 'yo-bm25-10000',
+    'cultural_corpus': 'su-bm25-50000',
+    'corpus_truncate': 500,
     'pretrained_model': 'FacebookAI/xlm-roberta-base', 
     # 'pretrained_model': 'distilbert-base-uncased', 
     'corpus_chunk_size': 128,
     'wwm_probability': 0.15,
-    'batch_size': 64,
+    'batch_size': 4,
+    'lang_code': 'su'
 }
 
 toy_figqa_dataset = DatasetDict({
@@ -84,9 +86,97 @@ def mk_models(args):
     print(f'mc_model num param: {mc_model.num_parameters()}')
     return mlm_model, mc_model
 
+class MultiTaskModel(torch.nn.Module):
+    def __init__(self, mlm_model, mc_model, tokenizer): # by claude
+        super().__init__()
+        self.mc_model = mc_model
+        self.base_model = mc_model.base_model
+        self.mlm_head = mlm_model.lm_head
+        self.mc_head = mc_model.classifier
+        self.mc_dropout = mc_model.dropout
+        self.tokenizer = tokenizer
+        mlm_model.base_model = self.base_model
+
+    def mlm_forward(self, batch):       
+        base_output = self.base_model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"]
+        )
+
+        last_hidden = base_output.last_hidden_state
+
+        mlm_logits = self.mlm_head(last_hidden)
+        mlm_loss = torch.nn.functional.cross_entropy(mlm_logits.view(-1, mlm_logits.size(-1)), batch['labels'].view(-1))
+        return mlm_logits, mlm_loss
+    
+    def mlm_inference(self, batch):       
+        base_output = self.base_model(
+            input_ids=batch["input_ids"],
+            attention_mask=batch["attention_mask"]
+        )
+        last_hidden = base_output.last_hidden_state
+        mlm_logits = self.mlm_head(last_hidden)
+        return mlm_logits
+
+    def fill_mask(self, input_text: str):
+        toy_input = self.tokenizer(input_text, return_tensors="pt").to(self.base_model.device)
+        token_logits = self.mlm_inference(toy_input)
+        mask_token_index = torch.where(toy_input["input_ids"] == self.tokenizer.mask_token_id)[1]
+        mask_token_logits = token_logits[0, mask_token_index, :]
+        top_tokens = torch.topk(mask_token_logits, 10, dim=1).indices[0].tolist()
+        print(f'input: {input_text}')
+        for i, token in enumerate(top_tokens):
+            print(f"pred {i}: {input_text.replace(self.tokenizer.mask_token, f'_{self.tokenizer.decode([token])}_')}")
+
+    def mc_forward(self, batch):
+        input_ids=batch["input_ids"]
+        attention_mask=batch["attention_mask"]
+        
+        num_choices = input_ids.shape[1]
+        assert (num_choices == 2)
+        flat_input_ids = input_ids.view(-1, input_ids.size(-1)) if input_ids is not None else None
+        flat_attention_mask = attention_mask.view(-1, attention_mask.size(-1)) if attention_mask is not None else None
+        base_output = self.base_model(
+            input_ids=flat_input_ids,
+            attention_mask=flat_attention_mask
+        )
+        
+        pooled_output = base_output[1]
+        pooled_output = self.mc_dropout(pooled_output)
+        mc_logits = self.mc_head(pooled_output)
+        reshaped_mc_logits = mc_logits.view(-1, num_choices)
+        
+        # mc_logits = self.mc_head(last_hidden[:, 0, :])  # Use the [CLS] token for multiple choice
+        mc_loss = torch.nn.functional.cross_entropy(reshaped_mc_logits, batch["labels"])
+        return reshaped_mc_logits, mc_loss
+
+    # def forward(self, input_ids, attention_mask, mlm_labels, multiple_choice_labels): # by claude
+    #     # Pass the input through the base model
+    #     output = self.base_model(
+    #         input_ids=input_ids,
+    #         attention_mask=attention_mask
+    #     )
+    #     sequence_output = output.last_hidden_state
+
+    #     # Compute the Masked Language Modeling (MLM) loss
+    #     mlm_output = self.mlm_head(sequence_output)
+    #     mlm_loss = torch.nn.functional.cross_entropy(mlm_output.view(-1, mlm_output.size(-1)), mlm_labels.view(-1))
+
+    #     # Compute the Multiple Choice loss
+    #     mc_output = self.mc_head(sequence_output[:, 0, :])  # Use the [CLS] token for multiple choice
+    #     mc_loss = torch.nn.functional.cross_entropy(mc_output, multiple_choice_labels)
+
+    #     # Combine the losses
+    #     total_loss = mlm_loss + mc_loss
+    #     return total_loss
+
+def mk_multitask_model(args):
+    mlm_model, mc_model = mk_models(args)
+    return MultiTaskModel(mlm_model, mc_model)
+
+
 # based on hugging face docs
 def fill_mask(args, model, tokenizer, input_text: str):
-    model.to('cpu')
     toy_input = tokenizer(input_text, return_tensors="pt")
     token_logits = model(**toy_input).logits
     mask_token_index = torch.where(toy_input["input_ids"] == tokenizer.mask_token_id)[1]
@@ -99,6 +189,7 @@ def fill_mask(args, model, tokenizer, input_text: str):
 def mk_corpus(args, tokenizer, toy: bool = True):
     if not toy:
         corpus_unsplit = load_dataset("chaosarium/c4-cultural-extract", revision=args['cultural_corpus'])
+        corpus_unsplit["train"] = corpus_unsplit["train"].select(range(args['corpus_truncate']))
     else:
         corpus_unsplit = toy_corpus
     corpus = corpus_unsplit["train"].train_test_split(test_size=0.1, seed=42)
@@ -165,6 +256,60 @@ def mk_corpus(args, tokenizer, toy: bool = True):
 
     return lm_corpus, corpus_mask_collator, corpus_wwm_collator
 
+# lm_corpus = DatasetDict({
+#     train: Dataset({
+#         features: ['input_ids', 'attention_mask', 'word_ids', 'labels'],
+#         num_rows: 14427
+#     })
+#     val: Dataset({
+#         features: ['input_ids', 'attention_mask', 'word_ids', 'labels'],
+#         num_rows: 1434
+#     })
+# })
+def mk_corpus_dataloaders(lm_corpus: DatasetDict, corpus_mask_collator, tokenizer, args):
+    def insert_random_mask(batch): # from pytorch docs
+        features = [dict(zip(batch, t)) for t in zip(*batch.values())]
+        masked_inputs = corpus_mask_collator(features)
+        # Create a new "masked" column for each column in the dataset
+        return {"masked_" + k: v.numpy() for k, v in masked_inputs.items()}
+    
+    no_word_ids_lm_corpus = lm_corpus.remove_columns(["word_ids"])
+    val_dataset = no_word_ids_lm_corpus["val"].map(
+        insert_random_mask,
+        batched=True,
+        remove_columns=no_word_ids_lm_corpus["val"].column_names,
+    )
+    val_dataset = val_dataset.rename_columns({
+        "masked_input_ids": "input_ids",
+        "masked_attention_mask": "attention_mask",
+        "masked_labels": "labels",
+    })
+    print('eval instance:', val_dataset[0])
+    print('eval instance:', tokenizer.decode(val_dataset[0]['input_ids']))
+    print('eval instance:', ([tokenizer.decode([id]) if id >= 0 else 0 for id in val_dataset[0]['labels']]))
+    print()
+    print('train instance (before collate):', no_word_ids_lm_corpus["train"][0])
+    print('train instance (before collate):', tokenizer.decode(no_word_ids_lm_corpus["train"][0]['input_ids']))
+    print('train instance (before collate):', ([tokenizer.decode([id]) if id >= 0 else 0 for id in no_word_ids_lm_corpus["train"][0]['labels']]))
+    
+    train_dataloader = DataLoader(
+        no_word_ids_lm_corpus["train"],
+        shuffle=True,
+        batch_size=args['batch_size'],
+        collate_fn=corpus_mask_collator,
+    )
+    val_dataloader = DataLoader(val_dataset, batch_size=args['batch_size'], collate_fn=default_data_collator)
+    return train_dataloader, val_dataloader
+
+def mk_figqa_dataloaders(figqa_datasets: DatasetDict, figqa_data_collator, tokenizer, args):
+    figqa_train_dataloader = DataLoader(figqa_datasets["train"], shuffle=True, collate_fn=figqa_data_collator, batch_size=args['batch_size'])
+    figqa_val_dataloader = DataLoader(figqa_datasets["val"], collate_fn=figqa_data_collator, batch_size=args['batch_size'])
+    for batch in figqa_train_dataloader:
+        print("figqa train instance:", batch['input_ids'][0], tokenizer.decode(batch['input_ids'][0][0]))
+        print("its label:", batch['labels'][0])
+        break
+    return figqa_train_dataloader, figqa_val_dataloader
+
 @dataclass
 class DataCollatorForMultipleChoice: # from multilingual figqa
     """
@@ -224,7 +369,7 @@ def mk_figqa_dataset(args, tokenizer, toy: bool = True):
         data_files = {
             'train': '../langdata/en_train.csv',
             'val': '../langdata/en_dev.csv',
-            'test': '../langdata/su.csv',
+            'test': f'../langdata/{args["lang_code"]}.csv',
         }
         raw_datasets = load_dataset('csv', data_files=data_files)
     else:
