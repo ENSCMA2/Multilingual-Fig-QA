@@ -44,7 +44,7 @@ class TogetherGeneratorBase():
         self.system_prompt = f"You are completing a multiple-choice task. Answer with a single integer."
 
     def __call__(self, system_prompt, user_prompt, max_tokens=20) -> str:
-        predictions = client.chat.completions.create(messages = 
+        predictions = self.client.chat.completions.create(messages = 
                                                         [{"role": "system",
                                                           "content": sys,},
                                                          {"role": "user",
