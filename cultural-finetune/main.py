@@ -64,22 +64,20 @@ def run_train_loop(
         for step in range(steps_per_epoch):
             interleave_index = torch.multinomial(torch.tensor(interleave_probs), 1).item()
             if interleave_index == 0:
-                print('🎲 training mlm...')
                 corpus_batch = iter_next(corpus_train_iterator)
                 if corpus_batch == None:
                     corpus_train_iterator = iter(corpus_train_dataloader)
                     corpus_batch = iter_next(corpus_train_iterator)
                 mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
-                print("🎯 mlm loss: ", mlm_loss.item())
+                print("📚 mlm loss: ", mlm_loss.item())
                 loss = args.mlm_loss_weight * mlm_loss
             if interleave_index == 1:
-                print('🎲 training mc...')
                 figqa_batch = iter_next(figqa_train_iterator)
                 if figqa_batch == None:
                     figqa_train_iterator = iter(figqa_train_dataloader)
                     figqa_batch = iter_next(figqa_train_iterator)
                 mc_logits, mc_loss = model.mc_forward(figqa_batch)
-                print("🎯 mc loss: ", mc_loss.item())
+                print("🗳️  mc loss: ", mc_loss.item())
                 loss = args.mc_loss_weight * mc_loss
               
             accelerator.backward(loss)  
