@@ -39,7 +39,7 @@ class BM25Retriever(RetrieverBase):
     ):
         self.dataset = dataset
         self.docs = self.dataset.gt_split_docs()
-        self.bm25_retriever = langchain_community.retrievers.BM25Retriever.from_documents(self.docs, k=k)
+        self.bm25_retriever = langchain_community.retrievers.BM25Retriever.from_documents(self.docs, k=5)
 
     def query(
         self,

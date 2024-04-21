@@ -1,6 +1,7 @@
 meta-llama/Llama-2-7b-chat-hf
 jv
+this set contains 50000 documents with max len 956215
+split into 22723892 documents with max len 150
+Namespace(sleeptime=1.2, in_mem_index=True, lang='jv', testset='langdata', retriever='bm25', generator='meta-llama/Llama-2-7b-chat-hf', k=4)
+<lib.preprocess.TextDataset object at 0x7fe0a0badf90>
 kn
-su
-sw
-jv
