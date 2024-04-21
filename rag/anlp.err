@@ -11,4 +11,3 @@ You can remove this warning by passing 'token=<use_auth_token>' instead.
 Repo card metadata block was not found. Setting CardData to empty.
 Using the latest cached version of the dataset since chaosarium/c4-cultural-extract couldn't be found on the Hugging Face Hub
 Found the latest cached dataset configuration 'default' at /home/khalevy/.cache/huggingface/datasets/chaosarium___c4-cultural-extract/default/0.0.0/60b269c80d6e0517a3dca4a4f0e4b9b3fe9c671e (last modified on Sun Apr 21 16:25:11 2024).
-slurmstepd: error: *** JOB 243623 ON shire-1-6 CANCELLED AT 2024-04-21T17:33:51 ***
