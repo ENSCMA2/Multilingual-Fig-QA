@@ -70,7 +70,7 @@ class TextDataset(DatasetBase):
         
         dataset = load_dataset("chaosarium/c4-cultural-extract", revision = data_dir)
         loader = HuggingFaceDatasetLoader("chaosarium/c4-cultural-extract", page_content_column = "example")
-        self.docs = loader.load()
+        self.docs = loader.load()[:10000]
         self.prepend_metadata = metadata_augment
         
         split_docs = self.text_splitter.split_documents(self.docs)
@@ -79,4 +79,4 @@ class TextDataset(DatasetBase):
                 doc.page_content = f"[Excerpt from {os.path.splitext(os.path.basename(doc.metadata['source']))[0]}]\n{doc.page_content}"
 
         self.split_docs = split_docs
-        self.labels = dataset["train"]["score"]
+        self.labels = dataset["train"]["score"][:10000]
