@@ -12,7 +12,7 @@ def gt_args():
     parser.add_argument('--corpus_truncate', type=int, default=500)
     parser.add_argument('--max_epochs', type=int, default=3)
     parser.add_argument('--steps_per_epoch', type=int, default=10)
-    parser.add_argument('--pretrained_model', type=str, choices=['FacebookAI/xlm-roberta-base'], default='FacebookAI/xlm-roberta-base')
+    parser.add_argument('--pretrained_model', type=str, choices=['xlm-roberta-base', 'bert-base-multilingual-cased'], default='xlm-roberta-base')
     parser.add_argument('--corpus_chunk_size', type=int, default=128)
     parser.add_argument('--mask_probability', type=float, default=0.15)
     parser.add_argument('--lr', type=float, default=1e-4)

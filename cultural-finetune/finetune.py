@@ -28,6 +28,8 @@ from transformers.utils import PaddingStrategy, get_full_repo_name
 import random
 from tqdm import tqdm
 import os, json
+from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
+import torch.nn.init as init
 
 
 
@@ -84,6 +86,15 @@ class MultiTaskModel(torch.nn.Module):
         self.base_model = mc_model.base_model
         self.mlm_head = mlm_model.lm_head
         self.mc_head = mc_model.classifier
+        # self.mc_head = torch.nn.Sequential(
+        #     torch.nn.Linear(mc_model.config.hidden_size, mc_model.config.hidden_size),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Linear(mc_model.config.hidden_size, 1)
+        # )
+        # for p in self.mc_head.parameters():
+        #     if p.dim() > 1:
+        #         init.xavier_uniform_(p)
+                
         self.mc_dropout = mc_model.dropout
         self.tokenizer = tokenizer
         mlm_model.base_model = self.base_model
@@ -120,23 +131,28 @@ class MultiTaskModel(torch.nn.Module):
             print(f"pred {i}: {input_text.replace(self.tokenizer.mask_token, f'_{self.tokenizer.decode([token])}_')}")
 
     def mc_forward(self, batch):
-        input_ids=batch["input_ids"]
+        input_ids=batch["input_ids"] # N, 2, L
         attention_mask=batch["attention_mask"]
         
         num_choices = input_ids.shape[1]
         assert (num_choices == 2)
-        flat_input_ids = input_ids.view(-1, input_ids.size(-1)) if input_ids is not None else None
-        flat_attention_mask = attention_mask.view(-1, attention_mask.size(-1)) if attention_mask is not None else None
+        flat_input_ids = input_ids.view(-1, input_ids.size(-1)) # 2N, L
+        flat_attention_mask = attention_mask.view(-1, attention_mask.size(-1)) # 2N, L
         base_output = self.base_model(
             input_ids=flat_input_ids,
             attention_mask=flat_attention_mask
         )
         
-        pooled_output = base_output[1]
-        pooled_output = self.mc_dropout(pooled_output)
-        mc_logits = self.mc_head(pooled_output)
-        reshaped_mc_logits = mc_logits.view(-1, num_choices)
+        pooled_output = base_output[1] # 2N, H
+        pooled_output = self.mc_dropout(pooled_output) # 2N, H
+        mc_logits = self.mc_head(pooled_output) # 2N, 1
+        # print(mc_logits)
+        reshaped_mc_logits = mc_logits.view(-1, num_choices) # N, 2
+        # print(reshaped_mc_logits)
+        # print(batch['labels'])
         
+        # loss_fct = CrossEntropyLoss()
+        # mc_loss = loss_fct(reshaped_mc_logits, batch["labels"])
         # mc_logits = self.mc_head(last_hidden[:, 0, :])  # Use the [CLS] token for multiple choice
         mc_loss = torch.nn.functional.cross_entropy(reshaped_mc_logits, batch["labels"])
         return reshaped_mc_logits, mc_loss
