@@ -21,7 +21,7 @@ import collections
 from transformers import TrainingArguments
 from transformers import Trainer
 from accelerate import Accelerator
-accelerator = Accelerator(cpu=True)
+# accelerator = Accelerator(cpu=True)
 from itertools import chain
 from dataclasses import dataclass
 from transformers.utils import PaddingStrategy, get_full_repo_name
@@ -29,7 +29,7 @@ import random
 from tqdm import tqdm
 import os, json
 
-args = {
+toy_args = {
     'cultural_corpus': 'yo-bm25-10000',
     'pretrained_model': 'FacebookAI/xlm-roberta-base', 
     # 'pretrained_model': 'distilbert-base-uncased', 
@@ -62,7 +62,7 @@ toy_figqa_dataset = DatasetDict({
 })
 
 toy_corpus = DatasetDict({
-    'train': Dataset.from_dict({'score': [0.2, 0.1, 0.05]*100, 'example': ['The cat said meow', "Cats say meow", 'Tokenizers are so meow']*100}),
+    'train': Dataset.from_dict({'score': [0.2, 0.1, 0.05]*140, 'example': ['The cat said meow', "Cats say meow", 'Tokenizers are so meow']*140}),
     # 'val': Dataset.from_dict({'score': [0.2]*20, 'example': ['A sound cats like to make is meow']*20})
 })
 
@@ -266,25 +266,25 @@ def mk_figqa_dataset(args, tokenizer, toy: bool = True):
 
         return tokenized_inputs
     
-    processed_figqa_datasets = raw_datasets.map(
+    figqa_datasets = raw_datasets.map(
         preprocess_function, batched=True, remove_columns=raw_datasets['train'].column_names
     )
-    processed_figqa_datasets
+    figqa_datasets
     
     print('figqa data looks like:')
-    print('train:', processed_figqa_datasets['train'][0])
-    print('decoded:', list(map(tokenizer.decode, processed_figqa_datasets['train'][0]['input_ids'])))
-    print('val:', processed_figqa_datasets['val'][0])
-    print('decoded:', list(map(tokenizer.decode, processed_figqa_datasets['val'][0]['input_ids'])))
-    print('test:', processed_figqa_datasets['test'][0])
-    print('decoded:', list(map(tokenizer.decode, processed_figqa_datasets['test'][0]['input_ids'])))
+    print('train:', figqa_datasets['train'][0])
+    print('decoded:', list(map(tokenizer.decode, figqa_datasets['train'][0]['input_ids'])))
+    print('val:', figqa_datasets['val'][0])
+    print('decoded:', list(map(tokenizer.decode, figqa_datasets['val'][0]['input_ids'])))
+    print('test:', figqa_datasets['test'][0])
+    print('decoded:', list(map(tokenizer.decode, figqa_datasets['test'][0]['input_ids'])))
     
     figqa_data_collator = DataCollatorForMultipleChoice(
         tokenizer, 
         # pad_to_multiple_of=(8 if accelerator.use_fp16 else None)
     )
     
-    return processed_figqa_datasets, figqa_data_collator
+    return figqa_datasets, figqa_data_collator
 
 # runs one epoch of training
 def train_model(train_dataloader, model, accelerator, optimizer, lr_scheduler, args, completed_steps, checkpointing_steps, eval_dataloader=None):
