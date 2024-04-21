@@ -39,6 +39,7 @@ class BM25Retriever(RetrieverBase):
     ):
         self.dataset = dataset
         self.docs = self.dataset.gt_split_docs()
+        self.bm25_retriever = langchain_community.retrievers.BM25Retriever.from_documents(self.docs, k=k)
 
     def query(
         self,
@@ -47,8 +48,7 @@ class BM25Retriever(RetrieverBase):
         verbose: bool = False,
     ) -> list[Document]:
 
-        bm25_retriever = langchain_community.retrievers.BM25Retriever.from_documents(self.docs, k=k)
-        res = bm25_retriever.get_relevant_documents(query)
+        res = self.bm25_retriever.get_relevant_documents(query)
         
         if verbose:
             for i, doc in enumerate(res):
