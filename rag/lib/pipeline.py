@@ -4,6 +4,9 @@ from time import sleep
 from lib.generate import TogetherGeneratorBase
 from lib.retrieval import RetrieverBase
 from langchain_core.documents import Document
+def log(txt):
+    with open("log.txt", "a") as o:
+        o.write(f"{txt}\n")
 
 class RAGPipeline:
     def __init__(self, retriever, generator, k):
@@ -12,6 +15,7 @@ class RAGPipeline:
         self.k = k
 
     def retrieval_pass(self, question):
+        log("in retrieval pass")
         retrieved = self.retriever.query(question, k=self.k)
         return {
             "retrieved": retrieved,
