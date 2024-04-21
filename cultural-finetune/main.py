@@ -4,6 +4,7 @@ import torch
 import math
 import argparse
 from accelerate.utils import set_seed
+import psutil
 
 def gt_args():
     global args
@@ -69,7 +70,7 @@ def run_train_loop(
                     corpus_train_iterator = iter(corpus_train_dataloader)
                     corpus_batch = iter_next(corpus_train_iterator)
                 mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
-                print("📚 mlm loss: ", mlm_loss.item())
+                print("\t📚 mlm loss: ", mlm_loss.item())
                 loss = args.mlm_loss_weight * mlm_loss
             if interleave_index == 1:
                 figqa_batch = iter_next(figqa_train_iterator)
@@ -77,15 +78,15 @@ def run_train_loop(
                     figqa_train_iterator = iter(figqa_train_dataloader)
                     figqa_batch = iter_next(figqa_train_iterator)
                 mc_logits, mc_loss = model.mc_forward(figqa_batch)
-                print("🗳️  mc loss: ", mc_loss.item())
+                print("\t🗳️ mc loss: ", mc_loss.item())
                 loss = args.mc_loss_weight * mc_loss
-              
+            
             accelerator.backward(loss)  
             # loss.backward()
             optimizer.step()
             lr_scheduler.step()
-            optimizer.zero_grad()
-
+            optimizer.zero_grad()          
+            
         # print('🏗️ training mlm...')
         # for corpus_batch in corpus_train_dataloader:
         #     mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
@@ -109,7 +110,7 @@ def run_train_loop(
         
         # 2 > validate
         model.eval()
-        print('🧪 evaluating mlm...')
+        print('🧪 valuating mlm...')
         # model.fill_mask(f"The cat said {tokenizer.decode(tokenizer.mask_token_id)}.")
         mlm_losses = []
         for corpus_batch in corpus_val_dataloader:
@@ -120,7 +121,7 @@ def run_train_loop(
         mlm_losses = mlm_losses[: len(lm_corpus['val'])]
         try: perplexity = math.exp(torch.mean(mlm_losses))
         except OverflowError: perplexity = float("inf")
-        print(f'😵‍💫 mlm val perplexity: {perplexity}')
+        print(f'🫤 mlm val perplexity: {perplexity}')
 
         model.eval()
         print('🧪 evaluating figqa...')
@@ -180,7 +181,7 @@ def main(args):
     lm_corpus, corpus_mask_collator, corpus_wwm_collator = mk_corpus(vars(args), tokenizer, toy=False)
     corpus_train_dataloader, corpus_val_dataloader = mk_corpus_dataloaders(lm_corpus, corpus_mask_collator, model.tokenizer, vars(args))
     
-    optimizer = torch.optim.AdamW(mlm_model.parameters(), lr=args.lr)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
@@ -190,7 +191,10 @@ def main(args):
     
     # 3 > train
     print("⛳ 3. training")
-    accelerator = Accelerator(cpu=False)
+    accelerator = Accelerator(
+        cpu=False, 
+        # mixed_precision='fp16',
+    )
 
     model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader)
     
