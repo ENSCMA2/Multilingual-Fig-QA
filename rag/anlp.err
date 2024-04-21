@@ -1,4 +1,68 @@
 No CUDA runtime is found, using CUDA_HOME='/usr/local/cuda'
+Traceback (most recent call last):
+  File "/home/khalevy/Multilingual-Fig-QA/rag/main.py", line 6, in <module>
+    from lib.pipeline import RAGPipeline
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/pipeline.py", line 5, in <module>
+    from lib.retrieval import RetrieverBase
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/retrieval.py", line 15, in <module>
+    from lib.preprocess import DatasetBase
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/preprocess.py", line 48, in <module>
+    'char_text_splitter': CharacterTextSplitter(
+                          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain_text_splitters/character.py", line 16, in __init__
+    super().__init__(**kwargs)
+  File "/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain_text_splitters/base.py", line 54, in __init__
+    raise ValueError(
+ValueError: Got a larger chunk overlap (250) than chunk size (150), should be smaller.
+No CUDA runtime is found, using CUDA_HOME='/usr/local/cuda'
+Traceback (most recent call last):
+  File "/home/khalevy/Multilingual-Fig-QA/rag/main.py", line 6, in <module>
+    from lib.pipeline import RAGPipeline
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/pipeline.py", line 5, in <module>
+    from lib.retrieval import RetrieverBase
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/retrieval.py", line 15, in <module>
+    from lib.preprocess import DatasetBase
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/preprocess.py", line 48, in <module>
+    'char_text_splitter': CharacterTextSplitter(
+                          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain_text_splitters/character.py", line 16, in __init__
+    super().__init__(**kwargs)
+  File "/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain_text_splitters/base.py", line 54, in __init__
+    raise ValueError(
+ValueError: Got a larger chunk overlap (250) than chunk size (150), should be smaller.
+No CUDA runtime is found, using CUDA_HOME='/usr/local/cuda'
+Traceback (most recent call last):
+  File "/home/khalevy/Multilingual-Fig-QA/rag/main.py", line 6, in <module>
+    from lib.pipeline import RAGPipeline
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/pipeline.py", line 5, in <module>
+    from lib.retrieval import RetrieverBase
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/retrieval.py", line 15, in <module>
+    from lib.preprocess import DatasetBase
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/preprocess.py", line 48, in <module>
+    'char_text_splitter': CharacterTextSplitter(
+                          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain_text_splitters/character.py", line 16, in __init__
+    super().__init__(**kwargs)
+  File "/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain_text_splitters/base.py", line 54, in __init__
+    raise ValueError(
+ValueError: Got a larger chunk overlap (250) than chunk size (150), should be smaller.
+No CUDA runtime is found, using CUDA_HOME='/usr/local/cuda'
+Traceback (most recent call last):
+  File "/home/khalevy/Multilingual-Fig-QA/rag/main.py", line 6, in <module>
+    from lib.pipeline import RAGPipeline
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/pipeline.py", line 5, in <module>
+    from lib.retrieval import RetrieverBase
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/retrieval.py", line 15, in <module>
+    from lib.preprocess import DatasetBase
+  File "/home/khalevy/Multilingual-Fig-QA/rag/lib/preprocess.py", line 48, in <module>
+    'char_text_splitter': CharacterTextSplitter(
+                          ^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain_text_splitters/character.py", line 16, in __init__
+    super().__init__(**kwargs)
+  File "/home/khalevy/miniconda3/lib/python3.11/site-packages/langchain_text_splitters/base.py", line 54, in __init__
+    raise ValueError(
+ValueError: Got a larger chunk overlap (250) than chunk size (150), should be smaller.
+No CUDA runtime is found, using CUDA_HOME='/usr/local/cuda'
 /home/khalevy/miniconda3/lib/python3.11/site-packages/langchain/embeddings/__init__.py:29: LangChainDeprecationWarning: Importing embeddings from langchain is deprecated. Importing from langchain will no longer be supported as of langchain==0.2.0. Please import from langchain-community instead:
 
 `from langchain_community.embeddings import HuggingFaceEmbeddings`.
@@ -9,6 +73,4 @@ To install langchain-community run `pip install -U langchain-community`.
 You can remove this warning by passing 'token=<use_auth_token>' instead.
   warnings.warn(
 Repo card metadata block was not found. Setting CardData to empty.
-Using the latest cached version of the dataset since chaosarium/c4-cultural-extract couldn't be found on the Hugging Face Hub
-Found the latest cached dataset configuration 'default' at /home/khalevy/.cache/huggingface/datasets/chaosarium___c4-cultural-extract/default/0.0.0/60b269c80d6e0517a3dca4a4f0e4b9b3fe9c671e (last modified on Sun Apr 21 16:25:11 2024).
-slurmstepd: error: *** JOB 243623 ON shire-1-6 CANCELLED AT 2024-04-21T17:33:51 ***
+slurmstepd: error: *** JOB 243632 ON shire-1-6 CANCELLED AT 2024-04-21T17:37:58 ***
