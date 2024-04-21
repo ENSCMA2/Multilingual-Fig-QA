@@ -34,6 +34,7 @@ def gt_args():
     parser.add_argument('--mlm_loss_weight', type=float, default=1.0)
     
     parser.add_argument('--dev', action="store_true")
+    parser.add_argument('--tags', type=str, nargs='*', default=[], help="Tags for wandb run")
     parser.add_argument("--seed", type=int, default=None)
     args = parser.parse_args()
     
@@ -233,7 +234,7 @@ def main(args):
         entity = 'chaosarium',
         project = 'multi', 
         config=vars(args),
-        tags=['corpus-interleave-figqa', args.lang],
+        tags=['corpus-interleave-figqa', args.lang] + args.tags,
         allow_val_change=True,
     )
     global_epoch = 0
