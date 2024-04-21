@@ -10,10 +10,14 @@ def gt_args():
     parser = argparse.ArgumentParser(description='Make dataset')
     parser.add_argument('--corpus_truncate', type=int, default=500)
     parser.add_argument('--max_epochs', type=int, default=3)
+    parser.add_argument('--steps_per_epoch', type=int, default=10)
     parser.add_argument('--pretrained_model', type=str, choices=['FacebookAI/xlm-roberta-base'], default='FacebookAI/xlm-roberta-base')
     parser.add_argument('--corpus_chunk_size', type=int, default=128)
     parser.add_argument('--mask_probability', type=float, default=0.15)
     parser.add_argument('--lr', type=float, default=1e-4)
+    parser.add_argument('--mc_loss_weight', type=float, default=1.0)
+    parser.add_argument('--mc_sample_weight', type=float, default=0.6)
+    parser.add_argument('--mlm_loss_weight', type=float, default=1.0)
     parser.add_argument('--batch_size', type=int, default=64)    
     parser.add_argument('--cultural_corpus', type=str, choices=['su-bm25-50000'], default='su-bm25-50000')
     parser.add_argument('--resultsize', type=int, default=50000)
@@ -24,6 +28,11 @@ def gt_args():
     print("args:", args)
     return args
 
+def iter_next(iterator):
+    try:
+        return next(iterator)
+    except StopIteration:
+        return None
 
 def run_train_loop(
     args,
@@ -38,33 +47,67 @@ def run_train_loop(
     accelerator,
     lm_corpus,
     figqa_datasets,
-    interleave_probs = [0.5, 0.5]
+    interleave_probs = [0.1, 0.9],
+    steps_per_epoch = 10,
 ):
+    corpus_train_iterator = iter(corpus_train_dataloader)
+    figqa_train_iterator = iter(figqa_train_dataloader)
+
     for epoch in tqdm(range(args.max_epochs)):
         print("\n\n==========\n🔄 EPOCH: ", epoch)
         
         # 1 > train
         model.train()
-        print('🏗️ training mlm...')
-        for corpus_batch in corpus_train_dataloader:
-            mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
-            print("🎯 mlm loss: ", mlm_loss.item())
-            # accelerator.backward(mlm_loss)
-            mlm_loss.backward()
+        
+        # interleave: by probability, cycle through datasets, break at max interleave step
+        
+        for step in range(steps_per_epoch):
+            interleave_index = torch.multinomial(torch.tensor(interleave_probs), 1).item()
+            if interleave_index == 0:
+                print('🎲 training mlm...')
+                corpus_batch = iter_next(corpus_train_iterator)
+                if corpus_batch == None:
+                    corpus_train_iterator = iter(corpus_train_dataloader)
+                    corpus_batch = iter_next(corpus_train_iterator)
+                mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
+                print("🎯 mlm loss: ", mlm_loss.item())
+                loss = args.mlm_loss_weight * mlm_loss
+            if interleave_index == 1:
+                print('🎲 training mc...')
+                figqa_batch = iter_next(figqa_train_iterator)
+                if figqa_batch == None:
+                    figqa_train_iterator = iter(figqa_train_dataloader)
+                    figqa_batch = iter_next(figqa_train_iterator)
+                mc_logits, mc_loss = model.mc_forward(figqa_batch)
+                print("🎯 mc loss: ", mc_loss.item())
+                loss = args.mc_loss_weight * mc_loss
+              
+            accelerator.backward(loss)  
+            # loss.backward()
             optimizer.step()
             lr_scheduler.step()
             optimizer.zero_grad()
+
+        # print('🏗️ training mlm...')
+        # for corpus_batch in corpus_train_dataloader:
+        #     mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
+        #     print("🎯 mlm loss: ", mlm_loss.item())
+        #     # accelerator.backward(mlm_loss)
+        #     mlm_loss.backward()
+        #     optimizer.step()
+        #     lr_scheduler.step()
+        #     optimizer.zero_grad()
         
-        model.train()
-        print('🏗️ training figqa...')
-        for figqa_batch in figqa_train_dataloader:
-            mc_logits, mc_loss = model.mc_forward(figqa_batch)
-            print("🎯 mc loss: ", mc_loss.item())
-            # accelerator.backward(mc_loss)
-            mc_loss.backward()
-            optimizer.step()
-            lr_scheduler.step()
-            optimizer.zero_grad()        
+        # print('🏗️ training figqa...')
+        # for figqa_batch in figqa_train_dataloader:
+        #     mc_logits, mc_loss = model.mc_forward(figqa_batch)
+        #     print("🎯 mc loss: ", mc_loss.item())
+        #     # accelerator.backward(mc_loss)
+        #     mc_loss.backward()
+        #     optimizer.step()
+        #     lr_scheduler.step()
+        #     optimizer.zero_grad()        
+        
         
         # 2 > validate
         model.eval()
@@ -96,10 +139,6 @@ def run_train_loop(
         eval_figqa_metric = figqa_metric.compute()
         print(f'🪄 figqa val metric: {eval_figqa_metric}')
         
-        # 3 > reshuffle datasets
-        figqa_train_dataloader.shuffle()
-        corpus_train_dataloader.shuffle()
-
 
 def run_test_loop(
     args,
@@ -154,6 +193,7 @@ def main(args):
     # 3 > train
     print("⛳ 3. training")
     accelerator = Accelerator(cpu=False)
+
     model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader)
     
     run_train_loop(
@@ -169,7 +209,8 @@ def main(args):
         accelerator,
         lm_corpus,
         figqa_datasets,
-        interleave_probs = [0.5, 0.5]
+        interleave_probs = [1-args.mc_sample_weight, args.mc_sample_weight],
+        steps_per_epoch = args.steps_per_epoch
     )
     
     # 4 > test
