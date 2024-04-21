@@ -9,20 +9,13 @@
 #SBATCH --cpus-per-task=16
 #SBATCH --time=100:00:00
 
-# TODO: average over non-degenerate seeds
-LANGS=("en_dev" "hi" "id" "jv" "kn" "su" "sw")
-
-for model in "meta-llama/Llama-2-7b-chat-hf" "mistralai/Mistral-7B-Instruct-v0.2" "Qwen/Qwen1.5-7B-Chat"
+for lang in "jv" "kn" "su" "sw";
 do
-    echo $model;
-    for lang in "jv" "kn" "su" "sw";
+    echo $lang;
+    for model in "meta-llama/Llama-2-7b-chat-hf" "mistralai/Mistral-7B-Instruct-v0.2" "Qwen/Qwen1.5-7B-Chat";
     do
-        echo $lang;
+        echo $model;
         python main.py --lang $lang --testset langdata --generator $model
-    done
-    for lang in "jv" "kn" "su" "sw";
-    do
-        echo $lang;
         python main.py --lang $lang --testset translate-test --generator $model
     done
 done

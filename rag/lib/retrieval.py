@@ -15,7 +15,7 @@ from ragatouille import RAGPretrainedModel
 from lib.preprocess import DatasetBase
 import langchain_community
 from langchain_core.retrievers import BaseRetriever
-from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 import torch
 

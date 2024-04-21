@@ -60,17 +60,17 @@ Which of the following corresponds to the meaning of the phrase above, enclosed 
 1: {o1}
 2: {o2}
 Respond with a single number: 1 or 2.'''
-    return u
+    return u, "\n".join([q, o1, o2])
 
 def do_evaluation(generator: TogetherGeneratorBase, args):
     
-    with open(f'../experiment/{args.generator.replace("/", "-")}/{args.testset}/{args.lang}/retrieval_acc.pkl', 'rb') as file:
+    with open(f'../experiment/{args.lang}/retrieval_acc.pkl', 'rb') as file:
         retrieval_acc = pickle.load(file)
         
     res_acc = []
     for i, entry in tqdm(enumerate(retrieval_acc), desc="evaluating...", total=len(retrieval_acc)):
      
-        Q, A = prompt_template(entry), entry['labels']
+        (Qq, Q), A = prompt_template(entry), entry['labels']
         try_k = args.k
         retry = True
         strike = 0
@@ -107,7 +107,7 @@ def do_evaluation(generator: TogetherGeneratorBase, args):
         res_acc.append(entry_res)
     
     # summary stats and file IO by copilot
-    output_dir = f'../experiment/{args.generator.replace("/", "-")}/{args.testset}/{args.lang}'
+    output_dir = f'../experiment/{args.lang}/{args.generator.replace("/", "-")}/{args.testset}/'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
@@ -142,7 +142,7 @@ def log(txt):
         o.write(f"{txt}\n")
 
 def do_retrieval(pipeline: RAGPipeline, args):
-    output_dir = f'../experiment/{args.generator.replace("/", "-")}/{args.testset}/{args.lang}'
+    output_dir = f'../experiment/{args.lang}'
     if not os.path.exists(f"{output_dir}/retrieval_acc.pkl"):
         testset = pd.read_csv(f"../{args.testset}/{args.lang}.csv")
         retrieval_acc = []
@@ -150,7 +150,8 @@ def do_retrieval(pipeline: RAGPipeline, args):
         for i, entry in testset.iterrows():
             start = time.time()
             log(i)
-            Q, A = prompt_template(entry), entry['labels']
+            (Qq, Q), A = prompt_template(entry), entry['labels']
+            log(Qq)
             log(Q)
             log(A)
             retrieval_res = pipeline.retrieval_pass(Q)
@@ -171,8 +172,12 @@ def do_retrieval(pipeline: RAGPipeline, args):
 if __name__ == '__main__':
     args = gt_args()
     generator = mk_generator(args)
+    print("made generator")
     dataset = mk_dataset(args)
+    print("made dataset")
     retriever = mk_retriever(args, dataset, False)
+    print("made retriever")
     pipeline = RAGPipeline(retriever, generator, args.k)
+    print("made pipeline")
     do_retrieval(pipeline, args)
     do_evaluation(generator, args)
