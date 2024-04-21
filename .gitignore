@@ -2,3 +2,4 @@
 .DS_Store
 culturaldataset/select_datasets
 .vscode/settings.json
+cultural-finetune/__pycache__/finetune.cpython-310.pyc
