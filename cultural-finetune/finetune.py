@@ -28,17 +28,10 @@ from transformers.utils import PaddingStrategy, get_full_repo_name
 import random
 from tqdm import tqdm
 import os, json
+from torch.nn import BCEWithLogitsLoss, CrossEntropyLoss, MSELoss
+import torch.nn.init as init
+import torch.nn as nn
 
-toy_args = {
-    'cultural_corpus': 'su-bm25-50000',
-    'corpus_truncate': 500,
-    'pretrained_model': 'FacebookAI/xlm-roberta-base', 
-    # 'pretrained_model': 'distilbert-base-uncased', 
-    'corpus_chunk_size': 128,
-    'wwm_probability': 0.15,
-    'batch_size': 4,
-    'lang_code': 'su'
-}
 
 toy_figqa_dataset = DatasetDict({
     'train': Dataset.from_dict({
@@ -89,10 +82,19 @@ def mk_models(args):
 class MultiTaskModel(torch.nn.Module):
     def __init__(self, mlm_model, mc_model, tokenizer): # by claude
         super().__init__()
-        self.mc_model = mc_model
+        # self.mc_model = mc_model
         self.base_model = mc_model.base_model
         self.mlm_head = mlm_model.lm_head
         self.mc_head = mc_model.classifier
+        # self.mc_head = torch.nn.Sequential(
+        #     torch.nn.Linear(mc_model.config.hidden_size, mc_model.config.hidden_size),
+        #     torch.nn.ReLU(),
+        #     torch.nn.Linear(mc_model.config.hidden_size, 1)
+        # )
+        # for p in self.mc_head.parameters():
+        #     if p.dim() > 1:
+        #         init.xavier_uniform_(p)
+                
         self.mc_dropout = mc_model.dropout
         self.tokenizer = tokenizer
         mlm_model.base_model = self.base_model
@@ -129,24 +131,36 @@ class MultiTaskModel(torch.nn.Module):
             print(f"pred {i}: {input_text.replace(self.tokenizer.mask_token, f'_{self.tokenizer.decode([token])}_')}")
 
     def mc_forward(self, batch):
-        input_ids=batch["input_ids"]
+        input_ids=batch["input_ids"] # N, 2, L
         attention_mask=batch["attention_mask"]
         
         num_choices = input_ids.shape[1]
         assert (num_choices == 2)
-        flat_input_ids = input_ids.view(-1, input_ids.size(-1)) if input_ids is not None else None
-        flat_attention_mask = attention_mask.view(-1, attention_mask.size(-1)) if attention_mask is not None else None
+        flat_input_ids = input_ids.view(-1, input_ids.size(-1)) # 2N, L
+        flat_attention_mask = attention_mask.view(-1, attention_mask.size(-1)) # 2N, L
         base_output = self.base_model(
             input_ids=flat_input_ids,
             attention_mask=flat_attention_mask
         )
         
-        pooled_output = base_output[1]
-        pooled_output = self.mc_dropout(pooled_output)
-        mc_logits = self.mc_head(pooled_output)
-        reshaped_mc_logits = mc_logits.view(-1, num_choices)
+        pooled_output = base_output[1] # 2N, H
+        # pooled_output = base_output[0][:, 0, :] # cls hidden?
+        pooled_output = self.mc_dropout(pooled_output) # 2N, H
         
+        
+        mc_logits = self.mc_head(pooled_output) # 2N, 1
+        # print(mc_logits)
+        reshaped_mc_logits = mc_logits.view(-1, num_choices) # N, 2
+        # print(nn.functional.softmax(reshaped_mc_logits))
+        # print(batch['labels'])
+        
+        # loss_fct = CrossEntropyLoss()
+        # mc_loss = loss_fct(reshaped_mc_logits, batch["labels"])
         # mc_logits = self.mc_head(last_hidden[:, 0, :])  # Use the [CLS] token for multiple choice
+        
+        # loss_fct = CrossEntropyLoss(reduction='none')
+        # print(loss_fct(reshaped_mc_logits, batch["labels"]))
+        
         mc_loss = torch.nn.functional.cross_entropy(reshaped_mc_logits, batch["labels"])
         return reshaped_mc_logits, mc_loss
 
@@ -218,7 +232,6 @@ def mk_corpus(args, tokenizer, toy: bool = True):
     
     lm_corpus = tokenized_copus.map(group_texts, batched=True)
 
-    wwm_probability = args['wwm_probability']
     def whole_word_masking_data_collator(features):
         for feature in features:
             word_ids = feature.pop("word_ids")
@@ -235,7 +248,7 @@ def mk_corpus(args, tokenizer, toy: bool = True):
                     mapping[current_word_index].append(idx)
 
             # Randomly mask words
-            mask = np.random.binomial(1, wwm_probability, (len(mapping),))
+            mask = np.random.binomial(1, args['mask_probability'], (len(mapping),))
             input_ids = feature["input_ids"]
             labels = feature["labels"]
             new_labels = [-100] * len(labels)
@@ -251,7 +264,7 @@ def mk_corpus(args, tokenizer, toy: bool = True):
     print("index 0 train example:")
     print(lm_corpus["train"][0])
     print('decoded:', tokenizer.decode(lm_corpus['train'][0]['input_ids']))
-    corpus_mask_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=0.15)
+    corpus_mask_collator = DataCollatorForLanguageModeling(tokenizer=tokenizer, mlm_probability=args['mask_probability'])
     corpus_wwm_collator = whole_word_masking_data_collator
 
     return lm_corpus, corpus_mask_collator, corpus_wwm_collator
@@ -301,14 +314,15 @@ def mk_corpus_dataloaders(lm_corpus: DatasetDict, corpus_mask_collator, tokenize
     val_dataloader = DataLoader(val_dataset, batch_size=args['batch_size'], collate_fn=default_data_collator)
     return train_dataloader, val_dataloader
 
-def mk_figqa_dataloaders(figqa_datasets: DatasetDict, figqa_data_collator, tokenizer, args):
+def mk_figqa_dataloaders(figqa_datasets, figqa_data_collator, tokenizer, args):
     figqa_train_dataloader = DataLoader(figqa_datasets["train"], shuffle=True, collate_fn=figqa_data_collator, batch_size=args['batch_size'])
     figqa_val_dataloader = DataLoader(figqa_datasets["val"], collate_fn=figqa_data_collator, batch_size=args['batch_size'])
+    figqa_test_dataloader = DataLoader(figqa_datasets["test"], collate_fn=figqa_data_collator, batch_size=args['batch_size'])
     for batch in figqa_train_dataloader:
         print("figqa train instance:", batch['input_ids'][0], tokenizer.decode(batch['input_ids'][0][0]))
         print("its label:", batch['labels'][0])
         break
-    return figqa_train_dataloader, figqa_val_dataloader
+    return figqa_train_dataloader, figqa_val_dataloader, figqa_test_dataloader
 
 @dataclass
 class DataCollatorForMultipleChoice: # from multilingual figqa
@@ -369,7 +383,7 @@ def mk_figqa_dataset(args, tokenizer, toy: bool = True):
         data_files = {
             'train': '../langdata/en_train.csv',
             'val': '../langdata/en_dev.csv',
-            'test': f'../langdata/{args["lang_code"]}.csv',
+            'test': f'../langdata/{args["lang"]}.csv',
         }
         raw_datasets = load_dataset('csv', data_files=data_files)
     else:
