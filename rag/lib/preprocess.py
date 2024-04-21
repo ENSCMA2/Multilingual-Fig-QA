@@ -46,13 +46,13 @@ class DatasetBase:
 
 splitter_choices = {
     'char_text_splitter': CharacterTextSplitter(
-        chunk_size=650,
+        chunk_size=150,
         chunk_overlap=250,
         length_function=len,
         is_separator_regex=False,
     ),
     'recursive_char_text_splitter': RecursiveCharacterTextSplitter(
-        chunk_size=650,
+        chunk_size=150,
         chunk_overlap=250,
         length_function=len,
         is_separator_regex=False,
