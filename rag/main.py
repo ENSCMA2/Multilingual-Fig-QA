@@ -138,26 +138,27 @@ def do_evaluation(generator: TogetherGeneratorBase, args):
     return
 
 def do_retrieval(pipeline: RAGPipeline, args):
-    testset = pd.read_csv(f"../{args.testset}/{args.lang}.csv")
-    retrieval_acc = []
-    for i, entry in testset.iterrows():
-        print(i)
-        Q, A = prompt_template(entry), entry['labels']
-        print(Q)
-        print(A)
-        retrieval_res = pipeline.retrieval_pass(Q)
-        retrieval_acc.append({
-            **entry,
-            **retrieval_res,
-        })
-        
     output_dir = f'../experiment/{args.generator.replace("/", "-")}/{args.testset}/{args.lang}'
-    print(output_dir)
-    if not os.path.exists(output_dir):
-        os.makedirs(output_dir)
+    if not os.path.exists(f"{output_dir}/retrieval_acc.pkl"):
+        testset = pd.read_csv(f"../{args.testset}/{args.lang}.csv")
+        retrieval_acc = []
+        for i, entry in testset.iterrows():
+            print(i)
+            Q, A = prompt_template(entry), entry['labels']
+            print(Q)
+            print(A)
+            retrieval_res = pipeline.retrieval_pass(Q)
+            retrieval_acc.append({
+                **entry,
+                **retrieval_res,
+            })
+            
+        print(output_dir)
+        if not os.path.exists(output_dir):
+            os.makedirs(output_dir)
 
-    with open(f'{output_dir}/retrieval_acc.pkl', 'wb') as f:
-        pickle.dump(retrieval_acc, f)
+        with open(f'{output_dir}/retrieval_acc.pkl', 'wb') as f:
+            pickle.dump(retrieval_acc, f)
         
 if __name__ == '__main__':
     args = gt_args()
