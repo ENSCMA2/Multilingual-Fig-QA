@@ -66,7 +66,7 @@ def run_interleaved_train_loop(
 
     trainloopbar = tqdm(range(num_epochs), unit="epoch")
     trainloopbar.set_description(f"Train loop")
-    for _ in range(num_epochs):
+    for _ in trainloopbar:
         # print("\n\n==========\n🔄 EPOCH: ", global_epoch)
         
         # 1 > train
@@ -197,7 +197,7 @@ def run_test_loop(
         figqa_metric.add_batch(predictions=predictions,references=references,)
     eval_figqa_metric = figqa_metric.compute()
     print(f'🪄 figqa metric: {eval_figqa_metric}')
-    run.log({"testmc_acc": eval_figqa_metric['accuracy'], "epoch": global_epoch, "step": global_step})
+    run.log({"test/mc_acc": eval_figqa_metric['accuracy'], "epoch": global_epoch, "step": global_step})
 
 def main(args):
 
