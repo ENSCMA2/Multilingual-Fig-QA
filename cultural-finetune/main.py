@@ -1,3 +1,4 @@
+from pprint import pprint
 from finetune import *
 from tqdm import tqdm
 import torch
@@ -6,12 +7,13 @@ import argparse
 from accelerate.utils import set_seed
 import psutil
 import random
+import wandb
 
 def gt_args():
     global args
     parser = argparse.ArgumentParser(description='Make dataset')
     parser.add_argument('--corpus_truncate', type=int, default=500)
-    parser.add_argument('--max_epochs', type=int, default=3)
+    parser.add_argument('--num_interleaved_epochs', type=int, default=3)
     parser.add_argument('--steps_per_epoch', type=int, default=10)
     parser.add_argument('--pretrained_model', type=str, choices=['xlm-roberta-base', 'bert-base-multilingual-cased', 'xlm-roberta-large'], default='xlm-roberta-base')
     parser.add_argument('--corpus_chunk_size', type=int, default=256)
@@ -36,8 +38,9 @@ def iter_next(iterator):
     except StopIteration:
         return None
 
-def run_train_loop(
+def run_interleaved_train_loop(
     args,
+    run,
     model: MultiTaskModel, 
     corpus_train_dataloader,
     corpus_val_dataloader,
@@ -50,13 +53,16 @@ def run_train_loop(
     lm_corpus,
     figqa_datasets,
     steps_per_epoch,
+    num_epochs, 
+    global_epoch: int,
+    global_step: int,
     interleave_probs = [0.1, 0.9],
     gradient_accumulation_steps = 8,
 ):
     corpus_train_iterator = iter(corpus_train_dataloader)
     figqa_train_iterator = iter(figqa_train_dataloader)
 
-    for epoch in tqdm(range(args.max_epochs)):
+    for epoch in tqdm(range(num_epochs)):
         print("\n\n==========\n🔄 EPOCH: ", epoch)
         
         # 1 > train
@@ -70,7 +76,8 @@ def run_train_loop(
                     corpus_train_iterator = iter(corpus_train_dataloader)
                     corpus_batch = iter_next(corpus_train_iterator)
                 mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
-                print("\t📚 mlm loss: ", mlm_loss.item())
+                # print("\t📚 mlm loss: ", mlm_loss.item())
+                run.log({"train/mlm_loss": mlm_loss.item(), "epoch": global_epoch, "step": global_step})
                 loss = args.mlm_loss_weight * mlm_loss
             if interleave_index == 1:
                 figqa_batch = iter_next(figqa_train_iterator)
@@ -78,16 +85,20 @@ def run_train_loop(
                     figqa_train_iterator = iter(figqa_train_dataloader)
                     figqa_batch = iter_next(figqa_train_iterator)
                 mc_logits, mc_loss = model.mc_forward(figqa_batch)
-                print("\t🗳️ mc loss: ", mc_loss.item())
+                # print("\t🗳️ mc loss: ", mc_loss.item())
+                run.log({"train/mc_loss": mc_loss.item(), "epoch": global_epoch, "step": global_step})
                 loss = args.mc_loss_weight * mc_loss
             
             loss = loss / gradient_accumulation_steps
+            run.log({"train/scaled_loss": loss.item(), "epoch": global_epoch, "step": global_step})
             accelerator.backward(loss)  
             
             if step % gradient_accumulation_steps == 0 or step == steps_per_epoch - 1:
                 optimizer.step()
                 lr_scheduler.step()
                 optimizer.zero_grad()
+            global_step+=1
+        global_epoch+=1
             
         # print('🏗️ training mlm...')
         # for corpus_batch in corpus_train_dataloader:
@@ -124,6 +135,8 @@ def run_train_loop(
         try: perplexity = math.exp(torch.mean(mlm_losses))
         except OverflowError: perplexity = float("inf")
         print(f'🫤 mlm val perplexity: {perplexity}')
+        run.log({"val/mlm_perplexity": perplexity, "epoch": global_epoch, "step": global_step})
+        run.log({"val/mlm_loss": torch.mean(mlm_losses).item(), "epoch": global_epoch, "step": global_step})
 
         model.eval()
         print('🧪 evaluating figqa...')
@@ -139,15 +152,19 @@ def run_train_loop(
             figqa_metric.add_batch(predictions=predictions,references=references,)
         eval_figqa_metric = figqa_metric.compute()
         print(f'🪄 figqa val metric: {eval_figqa_metric}')
+        run.log({"val/mc_acc": eval_figqa_metric['accuracy'], "epoch": global_epoch, "step": global_step})
         
 
 def run_test_loop(
     args,
+    run,
     model: MultiTaskModel, 
     figqa_train_dataloader,
     figqa_val_dataloader,
     figqa_test_dataloader,
     accelerator,
+    global_epoch: int,
+    global_step: int,
 ):
     model.eval()
     print('🧪 testing figqa...')
@@ -163,7 +180,7 @@ def run_test_loop(
         figqa_metric.add_batch(predictions=predictions,references=references,)
     eval_figqa_metric = figqa_metric.compute()
     print(f'🪄 figqa metric: {eval_figqa_metric}')
-
+    run.log({"testmc_acc": eval_figqa_metric['accuracy'], "epoch": global_epoch, "step": global_step})
 
 def main(args):
 
@@ -176,56 +193,75 @@ def main(args):
     # 2 > load datasets
     print("⛳ 2. loading datasets")
     print("=== figqa data ===")
-    figqa_datasets, figqa_data_collator = mk_figqa_dataset(vars(args), tokenizer, toy=False)
+    figqa_datasets, figqa_data_collator = mk_figqa_dataset(vars(args), tokenizer, toy=args.dev)
     figqa_train_dataloader, figqa_val_dataloader, figqa_test_dataloader = mk_figqa_dataloaders(figqa_datasets, figqa_data_collator, model.tokenizer, vars(args))
 
     print("\n=== cultural data ===")
-    lm_corpus, corpus_mask_collator, corpus_wwm_collator = mk_corpus(vars(args), tokenizer, toy=False)
+    lm_corpus, corpus_mask_collator, corpus_wwm_collator = mk_corpus(vars(args), tokenizer, toy=args.dev)
     corpus_train_dataloader, corpus_val_dataloader = mk_corpus_dataloaders(lm_corpus, corpus_mask_collator, model.tokenizer, vars(args))
     
+    # 3 > setup experiment
+    run = wandb.init(
+        entity = 'chaosarium',
+        project = 'multi', 
+        config=vars(args),
+        tags='corpus-interleave-figqa',
+        allow_val_change=True,
+    )
+    global_epoch = 0
+    global_step = 0
+
+    # 4 > train corpus only
+    
+    # 5 > train interleaved
+    print("⛳ 3. training")
     optimizer = torch.optim.AdamW(model.parameters(), lr=args.lr)
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
         num_warmup_steps=0,
-        num_training_steps=args.max_epochs*args.steps_per_epoch,
+        num_training_steps=args.num_interleaved_epochs*args.steps_per_epoch,
     )
-    
-    # 3 > train
-    print("⛳ 3. training")
     accelerator = Accelerator(
         cpu=False, 
         # mixed_precision='fp16',
     )
-
     model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader)
-    
-    run_train_loop(
-        args,
-        model, 
-        corpus_train_dataloader,
-        corpus_val_dataloader,
-        optimizer,
-        lr_scheduler,
-        figqa_train_dataloader,
-        figqa_val_dataloader,
-        figqa_test_dataloader,
-        accelerator,
-        lm_corpus,
-        figqa_datasets,
-        steps_per_epoch = args.steps_per_epoch,
-        interleave_probs = [1-args.mc_sample_weight, args.mc_sample_weight],
+    run_interleaved_train_loop(
+        args=args,
+        run=run,
+        model=model,
+        corpus_train_dataloader=corpus_train_dataloader,
+        corpus_val_dataloader=corpus_val_dataloader,
+        optimizer=optimizer,
+        lr_scheduler=lr_scheduler,
+        figqa_train_dataloader=figqa_train_dataloader,
+        figqa_val_dataloader=figqa_val_dataloader,
+        figqa_test_dataloader=figqa_test_dataloader,
+        accelerator=accelerator,
+        lm_corpus=lm_corpus,
+        figqa_datasets=figqa_datasets,
+        steps_per_epoch=args.steps_per_epoch,
+        num_epochs=args.num_interleaved_epochs,
+        global_epoch=global_epoch,
+        global_step=global_step,
+        interleave_probs=[1-args.mc_sample_weight, args.mc_sample_weight],
     )
     
-    # 4 > test
+    # 6 > train figqa only
+    
+    # 7 > test
     print("⛳ 4. testing")
     run_test_loop(
         args,
+        run,
         model, 
         figqa_train_dataloader,
         figqa_val_dataloader,
         figqa_test_dataloader,
         accelerator,
+        global_epoch,
+        global_step,
     )
 
 if __name__ == '__main__':
@@ -235,6 +271,7 @@ if __name__ == '__main__':
     else:
         seed = random.randint(0, 4294967295)
         set_seed(seed)
+        args.seed = seed
         print(f"using seed {seed}")
 
     main(args)
