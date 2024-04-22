@@ -78,7 +78,7 @@ def do_evaluation(generator: TogetherGeneratorBase, args):
             docs = entry['retrieved'][:min(try_k, len(entry['retrieved']))] # expect enough docs cached
             try:
                 time.sleep(args.sleeptime)
-                A_hat, model_output, generation_prompt = generator.answer_with_context(Q, docs)
+                A_hat, generation_prompt = generator.answer_with_context(Q, docs)
                 break
             except BaseException as e:
                 log(e)
