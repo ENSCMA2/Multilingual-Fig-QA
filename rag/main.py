@@ -100,7 +100,6 @@ def do_evaluation(generator: TogetherGeneratorBase, args):
             "A_hat": A_hat,
             "correct": correct,
             **entry,
-            "model_output": model_output,
             "generation_prompt": generation_prompt,
         }
         if 'Q_aug' not in entry_res:
