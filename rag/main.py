@@ -15,7 +15,7 @@ import pickle
 
 def gt_args():
     parser = argparse.ArgumentParser(description='Run RAG system')
-    parser.add_argument('--sleeptime', type=float, default=1.2)
+    parser.add_argument('--sleeptime', type=float, default=0.5)
     parser.add_argument('--in_mem_index', action="store_true", default=True)
     parser.add_argument('--lang', type=str, choices=['jv', 'kn', 'su', 'sw'], default='jv')
     parser.add_argument('--testset', type=str, choices=['langdata', 'translate-test'], default='langdata')
