@@ -45,7 +45,7 @@ class TogetherGeneratorBase():
           api_key=api_key,
           base_url='https://api.together.xyz/v1',
         )
-        self.system_prompt = f"You are completing a multiple-choice task. Answer with a single integer."
+        self.system_prompt = f"You are completing a multiple-choice task. Answer with a single integer, 1 or 2."
 
     def __call__(self, system_prompt, user_prompt, max_tokens=20) -> str:
         predictions = self.client.chat.completions.create(messages = 
