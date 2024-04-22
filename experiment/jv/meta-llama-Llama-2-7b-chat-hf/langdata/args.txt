@@ -1,0 +1,1 @@
+Namespace(sleeptime=1.2, in_mem_index=True, lang='jv', testset='langdata', retriever='bm25', generator='meta-llama/Llama-2-7b-chat-hf', k=4)
