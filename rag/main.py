@@ -81,7 +81,8 @@ def do_evaluation(generator: TogetherGeneratorBase, args):
                 A_hat, model_output, generation_prompt = generator.answer_with_context(Q, docs)
                 break
             except BaseException as e:
-                print(f'failed to evaluate when k = {try_k} context window issue?, {e}')
+                log(e)
+                log(f'failed to evaluate when k = {try_k} context window issue?, {e}')
                 time.sleep(args.sleeptime)
                 strike += 1
                 if strike > 2:
@@ -89,7 +90,7 @@ def do_evaluation(generator: TogetherGeneratorBase, args):
                 if try_k == 0:
                     A_hat, model_output, generation_prompt = 'failed', 'failed', 'failed'
                     retry = False
-                    print(f'GIVE UP on entry {entry}. need to retry manually!')
+                    log(f'GIVE UP on entry {entry}. need to retry manually!')
                     break
                 
 

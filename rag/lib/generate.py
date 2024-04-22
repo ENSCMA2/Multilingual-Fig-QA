@@ -20,6 +20,10 @@ from openai import OpenAI
 # https://www.pinecone.io/learn/series/langchain/langchain-prompt-templates/
 
 
+def log(txt):
+    with open("log.txt", "a") as o:
+        o.write(f"{txt}\n")
+        
 def format_documents(docs: list[Document]):
     res = ['']
     for doc in docs:
@@ -51,7 +55,7 @@ class TogetherGeneratorBase():
                                                           "content": user_prompt,}],
                                                      model=self.model_name,
                                                      max_tokens = 20).choices[0].message.content
-        print("model output:", predictions)
+        log("model output:", predictions)
         ext = extract_answer(predictions)
         return ext
 
