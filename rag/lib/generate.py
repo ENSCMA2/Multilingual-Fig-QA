@@ -46,13 +46,14 @@ class TogetherGeneratorBase():
     def __call__(self, system_prompt, user_prompt, max_tokens=20) -> str:
         predictions = self.client.chat.completions.create(messages = 
                                                         [{"role": "system",
-                                                          "content": sys,},
+                                                          "content": system_prompt,},
                                                          {"role": "user",
-                                                          "content": u,}],
+                                                          "content": user_prompt,}],
                                                      model=self.model_name,
-                                                     max_tokens = 20,
-                                                    ).choices[0].message.content
-        return extract_answer(predictions)
+                                                     max_tokens = 20).choices[0].message.content
+        print("model output:", predictions)
+        ext = extract_answer(predictions)
+        return ext
 
     def answer_with_context(self, question: str, documents: list[Document]) -> tuple[str, str, str]:
         formatted_docs = format_documents(documents)
