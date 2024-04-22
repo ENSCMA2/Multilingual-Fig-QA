@@ -23,7 +23,7 @@ from openai import OpenAI
 def log(txt):
     with open("log.txt", "a") as o:
         o.write(f"{txt}\n")
-        
+
 def format_documents(docs: list[Document]):
     res = ['']
     for doc in docs:
@@ -55,7 +55,7 @@ class TogetherGeneratorBase():
                                                           "content": user_prompt,}],
                                                      model=self.model_name,
                                                      max_tokens = 20).choices[0].message.content
-        log("model output:", predictions)
+        log(f"model output: {predictions}")
         ext = extract_answer(predictions)
         return ext
 
