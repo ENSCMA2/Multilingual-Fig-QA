@@ -1,0 +1,1 @@
+Namespace(sleeptime=0.5, in_mem_index=True, lang='su', testset='translate-test', retriever='bm25', generator='mistralai/Mistral-7B-Instruct-v0.2', k=4)
