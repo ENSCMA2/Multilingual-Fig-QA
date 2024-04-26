@@ -64,7 +64,7 @@ Respond with a single number: 1 or 2.'''
 
 def do_evaluation(generator: TogetherGeneratorBase, args):
     
-    with open(f'../experiment/{args.lang}/retrieval_acc.pkl', 'rb') as file:
+    with open(f'../experiment/{args.retriever}/{args.lang}/retrieval_acc.pkl', 'rb') as file:
         retrieval_acc = pickle.load(file)
         
     res_acc = []
@@ -107,7 +107,7 @@ def do_evaluation(generator: TogetherGeneratorBase, args):
         res_acc.append(entry_res)
     
     # summary stats and file IO by copilot
-    output_dir = f'../experiment/{args.lang}/{args.generator.replace("/", "-")}/{args.testset}/'
+    output_dir = f'../experiment/{args.retriever}/{args.lang}/{args.generator.replace("/", "-")}/{args.testset}/'
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
     
@@ -142,7 +142,7 @@ def log(txt):
         o.write(f"{txt}\n")
 
 def do_retrieval(pipeline: RAGPipeline, args):
-    output_dir = f'../experiment/{args.lang}'
+    output_dir = f'../experiment/{args.retriever}/{args.lang}'
     if not os.path.exists(f"{output_dir}/retrieval_acc.pkl"):
         testset = pd.read_csv(f"../{args.testset}/{args.lang}.csv")
         retrieval_acc = []
@@ -173,7 +173,7 @@ if __name__ == '__main__':
     args = gt_args()
     generator = mk_generator(args)
     print("made generator")
-    if not os.path.exists(f"../experiment/{args.lang}/retrieval_acc.pkl"):
+    if not os.path.exists(f"../experiment/{args.retriever}/{args.lang}/retrieval_acc.pkl"):
         dataset = mk_dataset(args)
         print("made dataset")
         retriever = mk_retriever(args, dataset, False)
