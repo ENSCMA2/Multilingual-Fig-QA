@@ -25,8 +25,11 @@ srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py
 
 # hparam search
 wandb sweep sweep_configs/su_sweep.yaml
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 12:00:00 --pty wandb agent chaosarium/multi/ybhpbevi --count 10 
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 12:00:00 --pty wandb agent chaosarium/multi/ybhpbevi --count 10 # ran
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/ybhpbevi # ran
 wandb sweep sweep_configs/yo_sweep.yaml
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/o092ps77 # ran
 wandb sweep sweep_configs/jv_sweep.yaml
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/wuocddqs # ran
 wandb sweep sweep_configs/kn_sweep.yaml
 wandb sweep sweep_configs/sw_sweep.yaml
