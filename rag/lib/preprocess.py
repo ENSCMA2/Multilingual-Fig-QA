@@ -69,11 +69,15 @@ class TextDataset(DatasetBase):
         super().__init__(text_splitter)
         
         dataset = load_dataset("chaosarium/c4-cultural-extract", revision = data_dir)
+        print("loaded dset")
         loader = HuggingFaceDatasetLoader("chaosarium/c4-cultural-extract", page_content_column = "example")
+        print("actually loaded dset")
         self.docs = loader.load()[:10000]
+        print("truly loaded dset")
         self.prepend_metadata = metadata_augment
         
         split_docs = self.text_splitter.split_documents(self.docs)
+        print("split dset")
         if metadata_augment:
             for doc in split_docs:
                 doc.page_content = f"[Excerpt from {os.path.splitext(os.path.basename(doc.metadata['source']))[0]}]\n{doc.page_content}"
