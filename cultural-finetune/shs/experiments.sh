@@ -25,11 +25,10 @@ srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py
 
 # hparam search
 wandb sweep sweep_configs/su_sweep.yaml
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 12:00:00 --pty wandb agent chaosarium/multi/ybhpbevi --count 10 # ran
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/ybhpbevi # ran
 wandb sweep sweep_configs/yo_sweep.yaml
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/o092ps77 # ran
 wandb sweep sweep_configs/jv_sweep.yaml
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/wuocddqs # ran
 wandb sweep sweep_configs/kn_sweep.yaml
 wandb sweep sweep_configs/sw_sweep.yaml
+
+# try lora
+srun --cpus-per-gpu 1 --gres=gpu:1 --mem=8g -t 6:00:00 --pty python main.py --tags wherewestand3 --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 3 --num_interleaved_epochs 50 --num_figqa_epochs 60 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 1e-5 --interleave_lr 8e-6 --figqa_lr 5e-6 --batch_size 32 --steps_per_interleaved_epoch 32 --corpus_truncate 20000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 16

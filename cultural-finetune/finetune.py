@@ -80,10 +80,24 @@ def mk_models(args):
     return mlm_model, mc_model
 
 class MultiTaskModel(torch.nn.Module):
-    def __init__(self, mlm_model, mc_model, tokenizer): # by claude
+    def __init__(self, mlm_model, mc_model, tokenizer, use_lora = False): # by claude
         super().__init__()
         # self.mc_model = mc_model
         self.base_model = mc_model.base_model
+        
+        if use_lora:
+            self.base_model = get_peft_model(self.base_model, LoraConfig(
+                r=16,
+                lora_alpha=32,
+                target_modules=["query", "value"],
+                # target_modules=["q_lin", "v_lin"],
+                lora_dropout=0.1,
+                # task_type=TaskType.FEATURE_EXTRACTION,
+            ))
+            print(f'trainable: {self.base_model.print_trainable_parameters()}')
+
+        
+        
         self.mlm_head = mlm_model.lm_head
         self.mc_head = mc_model.classifier
         # self.mc_head = torch.nn.Sequential(

@@ -9,6 +9,10 @@ import psutil
 import random
 import wandb
 
+# TODOs
+# - make real validation sets?
+# - lora
+
 def gt_args():
     global args
     parser = argparse.ArgumentParser(description='Make dataset')
@@ -238,7 +242,7 @@ def main(args):
     print("⛳ 1. making tokenizer and models")
     tokenizer = mk_tokenizer(vars(args))
     mlm_model, mc_model = mk_models(vars(args))
-    model = MultiTaskModel(mlm_model, mc_model, tokenizer)
+    model = MultiTaskModel(mlm_model, mc_model, tokenizer, use_lora=True)
 
     # 2 > load datasets
     print("⛳ 2. loading datasets")
