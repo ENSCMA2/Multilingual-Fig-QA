@@ -24,7 +24,7 @@ parameters:
     value: 'su'
     
   corpus_truncate:
-    values: [2000, 4000, 7000, 10000, 20000, 30000]
+    values: [2000, 4000, 7000, 10000, 20000]
   corpus_chunk_size:
     values: [32, 64, 128, 256]
   mask_probability:
@@ -56,6 +56,8 @@ parameters:
     min: 50
     max: 200
     distribution: int_uniform
+  gradient_accumulation_steps:
+    values: [1, 4, 8, 16]
 
   batch_size:
     value: 32

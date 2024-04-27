@@ -27,6 +27,7 @@ def gt_args():
     parser.add_argument('--interleave_lr', type=float, default=1e-5)
     parser.add_argument('--figqa_lr', type=float, default=1e-5)
     parser.add_argument('--steps_per_interleaved_epoch', type=int, default=30)
+    parser.add_argument('--gradient_accumulation_steps', type=int, default=8)
     
     parser.add_argument('--batch_size', type=int, default=128)    
     parser.add_argument('--mc_loss_weight', type=float, default=1.0)
@@ -50,6 +51,58 @@ def iter_next(iterator):
         return next(iterator)
     except StopIteration:
         return None
+
+def eval_mlm(
+    run,
+    model,
+    corpus_val_dataloader,
+    accelerator,
+    lm_corpus,
+    trainloopbar,
+    global_epoch,
+    global_step
+):
+    # print('🧪 valuating mlm...')
+    # model.fill_mask(f"The cat said {tokenizer.decode(tokenizer.mask_token_id)}.")
+    mlm_losses = []
+    for corpus_batch in corpus_val_dataloader:
+        with torch.no_grad():
+            mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
+        mlm_losses.append(accelerator.gather(mlm_loss.repeat(args.batch_size)))
+    mlm_losses = torch.cat(mlm_losses)
+    mlm_losses = mlm_losses[: len(lm_corpus['val'])]
+    try: perplexity = math.exp(torch.mean(mlm_losses))
+    except OverflowError: perplexity = float("inf")
+    # print(f'🫤 mlm val perplexity: {perplexity}')
+    run.log({"val/mlm_perplexity": perplexity, "epoch": global_epoch, "step": global_step})
+    run.log({"val/mlm_loss": torch.mean(mlm_losses).item(), "epoch": global_epoch, "step": global_step})
+    trainloopbar.set_postfix(val_mlm_perplexity=perplexity)
+    trainloopbar.set_postfix(val_mlm_loss=torch.mean(mlm_losses).item())
+
+def eval_mc(
+    run,
+    model,
+    figqa_val_dataloader,
+    accelerator,
+    trainloopbar,
+    global_epoch,
+    global_step,
+    prefix: str,
+):
+    figqa_samples_seen = 0
+    figqa_metric = evaluate.load("accuracy")
+    for step, figqa_batch in enumerate(figqa_val_dataloader):
+        with torch.no_grad():
+            mc_logits, mc_loss = model.mc_forward(figqa_batch)
+        predictions = mc_logits.argmax(dim=-1)
+        predictions, references = accelerator.gather((predictions, figqa_batch["labels"]))
+        # If we are in a multiprocess environment, we're cooked
+        if accelerator.num_processes > 1: assert(False)
+        figqa_metric.add_batch(predictions=predictions,references=references,)
+    eval_figqa_metric = figqa_metric.compute()
+    # print(f'🪄 figqa val metric: {eval_figqa_metric}')
+    run.log({f"val/{prefix}_mc_acc": eval_figqa_metric['accuracy'], "epoch": global_epoch, "step": global_step})
+    trainloopbar.set_postfix(val_mc_acc=eval_figqa_metric['accuracy'])
 
 def run_interleaved_train_loop(
     args,
@@ -147,41 +200,9 @@ def run_interleaved_train_loop(
         
         # 2 > validate
         model.eval()
-        
-        if True: # always evaluate perplexity?
-            # print('🧪 valuating mlm...')
-            # model.fill_mask(f"The cat said {tokenizer.decode(tokenizer.mask_token_id)}.")
-            mlm_losses = []
-            for corpus_batch in corpus_val_dataloader:
-                with torch.no_grad():
-                    mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
-                mlm_losses.append(accelerator.gather(mlm_loss.repeat(args.batch_size)))
-            mlm_losses = torch.cat(mlm_losses)
-            mlm_losses = mlm_losses[: len(lm_corpus['val'])]
-            try: perplexity = math.exp(torch.mean(mlm_losses))
-            except OverflowError: perplexity = float("inf")
-            # print(f'🫤 mlm val perplexity: {perplexity}')
-            run.log({"val/mlm_perplexity": perplexity, "epoch": global_epoch, "step": global_step})
-            run.log({"val/mlm_loss": torch.mean(mlm_losses).item(), "epoch": global_epoch, "step": global_step})
-            trainloopbar.set_postfix(val_mlm_perplexity=perplexity)
-            trainloopbar.set_postfix(val_mlm_loss=torch.mean(mlm_losses).item())
-            
-        if interleave_probs[1] != 0.0:
-            # print('🧪 evaluating figqa...')
-            figqa_samples_seen = 0
-            figqa_metric = evaluate.load("accuracy")
-            for step, figqa_batch in enumerate(figqa_val_dataloader):
-                with torch.no_grad():
-                    mc_logits, mc_loss = model.mc_forward(figqa_batch)
-                predictions = mc_logits.argmax(dim=-1)
-                predictions, references = accelerator.gather((predictions, figqa_batch["labels"]))
-                # If we are in a multiprocess environment, we're cooked
-                if accelerator.num_processes > 1: assert(False)
-                figqa_metric.add_batch(predictions=predictions,references=references,)
-            eval_figqa_metric = figqa_metric.compute()
-            # print(f'🪄 figqa val metric: {eval_figqa_metric}')
-            run.log({"val/mc_acc": eval_figqa_metric['accuracy'], "epoch": global_epoch, "step": global_step})
-            trainloopbar.set_postfix(val_mc_acc=eval_figqa_metric['accuracy'])
+        eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
+        eval_mc(run, model, figqa_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='en')
+        eval_mc(run, model, figqa_test_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='lang')
 
 
 def run_test_loop(
@@ -239,6 +260,11 @@ def main(args):
     )
     global_epoch = 0
     global_step = 0
+    wandb.define_metric(f'test/mc_acc')
+    wandb.define_metric(f'val/en_mc_acc', summary='max')
+    wandb.define_metric(f'val/lang_mc_acc', summary='max')
+    wandb.define_metric(f'val/mlm_perplexity', summary='max')
+    wandb.define_metric(f'val/mlm_loss', summary='max')
 
     # 4 > train corpus only
     print("⛳ 4. cultural-extract corpus training")
@@ -270,6 +296,7 @@ def main(args):
         global_epoch=global_epoch,
         global_step=global_step,
         interleave_probs=[1.0, 0.0],
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
     )
 
     # 5 > train interleaved
@@ -302,6 +329,7 @@ def main(args):
         global_epoch=global_epoch,
         global_step=global_step,
         interleave_probs=[1-args.mc_sample_weight, args.mc_sample_weight],
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
     )
     
     # 6 > train figqa only
@@ -334,6 +362,7 @@ def main(args):
         global_epoch=global_epoch,
         global_step=global_step,
         interleave_probs=[0.0, 1.0],
+        gradient_accumulation_steps=args.gradient_accumulation_steps,
     )
 
     # 7 > test
