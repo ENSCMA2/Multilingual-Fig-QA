@@ -81,6 +81,7 @@ class VectorRetriever(RetrieverBase):
         k: int = 5,
         verbose: bool = False,
     ) -> list[Document]:
+        print("in retrieval pass")
 
         res = self.db.similarity_search(query, k=k)
         
