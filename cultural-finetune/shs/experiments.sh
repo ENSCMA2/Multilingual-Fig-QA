@@ -29,7 +29,7 @@ srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 48:00:00 --pty wandb agent c
 wandb sweep sweep_configs/yo_sweep.yaml
 srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 48:00:00 --pty wandb agent chaosarium/multi/the9166i # ran
 wandb sweep sweep_configs/jv_sweep.yaml
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 48:00:00 --pty wandb agent chaosarium/multi/umwr1i3s
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 48:00:00 --pty wandb agent chaosarium/multi/umwr1i3s # ran
 wandb sweep sweep_configs/kn_sweep.yaml
 wandb sweep sweep_configs/sw_sweep.yaml
 
