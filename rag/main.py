@@ -170,15 +170,16 @@ def do_retrieval(pipeline: RAGPipeline, args):
             pickle.dump(retrieval_acc, f)
         
 if __name__ == '__main__':
+    log("name is main")
     args = gt_args()
     generator = mk_generator(args)
-    print("made generator")
+    log("made generator")
     if not os.path.exists(f"../experiment/{args.retriever}/{args.lang}/retrieval_acc.pkl"):
         dataset = mk_dataset(args)
-        print("made dataset")
+        log("made dataset")
         retriever = mk_retriever(args, dataset, False)
-        print("made retriever")
+        log("made retriever")
         pipeline = RAGPipeline(retriever, generator, args.k)
-        print("made pipeline")
+        log("made pipeline")
         do_retrieval(pipeline, args)
     do_evaluation(generator, args)
