@@ -34,20 +34,26 @@ import torch.nn as nn
 
 
 toy_figqa_dataset = DatasetDict({
-    'train': Dataset.from_dict({
+    'en_train': Dataset.from_dict({
         'labels': [0,0,1,1]*20,
         'startphrase': ['The cat said meow', "Cats say meow", 'The cat said woof', 'Cats generally bark']*20,
         'ending1': ['meow', "meow", 'meow', 'meow']*20,
         'ending2': ['woof', "woof", 'woof', 'woof']*20,
     }),
     # 'val': Dataset.from_dict({'labels': [1, 0]*20, 'input': ['A sound cats like to make is meow', 'A sound cats like to make is woof']*20})
-    'val': Dataset.from_dict({
+    'en_val': Dataset.from_dict({
         'labels': [0,0,1,1], 
         'startphrase': ['The cat said meow', "Cats say meow", 'The cat said woof', 'Cats generally bark'],
         'ending1': ['meow', "meow", 'meow', 'meow'],
         'ending2': ['woof', "woof", 'woof', 'woof'],
     }),
-    'test': Dataset.from_dict({
+    'lang_val': Dataset.from_dict({
+        'labels': [0,1], 
+        'startphrase': ['A sound cats like to make is meow', "A sound cats like to make is woof"],
+        'ending1': ['meow', "meow"],
+        'ending2': ['woof', "woof"],
+    }),
+    'lang_test': Dataset.from_dict({
         'labels': [0,1], 
         'startphrase': ['A sound cats like to make is meow', "A sound cats like to make is woof"],
         'ending1': ['meow', "meow"],
@@ -331,14 +337,15 @@ def mk_corpus_dataloaders(lm_corpus: DatasetDict, corpus_mask_collator, tokenize
     return train_dataloader, val_dataloader
 
 def mk_figqa_dataloaders(figqa_datasets, figqa_data_collator, tokenizer, args):
-    figqa_train_dataloader = DataLoader(figqa_datasets["train"], shuffle=True, collate_fn=figqa_data_collator, batch_size=args['batch_size'])
-    figqa_val_dataloader = DataLoader(figqa_datasets["val"], collate_fn=figqa_data_collator, batch_size=args['batch_size'])
-    figqa_test_dataloader = DataLoader(figqa_datasets["test"], collate_fn=figqa_data_collator, batch_size=args['batch_size'])
-    for batch in figqa_train_dataloader:
+    figqa_en_train_dataloader = DataLoader(figqa_datasets["en_train"], shuffle=True, collate_fn=figqa_data_collator, batch_size=args['batch_size'])
+    figqa_en_val_dataloader = DataLoader(figqa_datasets["en_val"], collate_fn=figqa_data_collator, batch_size=args['batch_size'])
+    figqa_lang_val_dataloader = DataLoader(figqa_datasets["lang_val"], collate_fn=figqa_data_collator, batch_size=args['batch_size'])
+    figqa_lang_test_dataloader = DataLoader(figqa_datasets["lang_test"], collate_fn=figqa_data_collator, batch_size=args['batch_size'])
+    for batch in figqa_en_train_dataloader:
         print("figqa train instance:", batch['input_ids'][0], tokenizer.decode(batch['input_ids'][0][0]))
         print("its label:", batch['labels'][0])
         break
-    return figqa_train_dataloader, figqa_val_dataloader, figqa_test_dataloader
+    return figqa_en_train_dataloader, figqa_en_val_dataloader, figqa_lang_val_dataloader, figqa_lang_test_dataloader
 
 @dataclass
 class DataCollatorForMultipleChoice: # from multilingual figqa
@@ -393,15 +400,21 @@ class DataCollatorForMultipleChoice: # from multilingual figqa
         batch["labels"] = torch.tensor(labels, dtype=torch.int64)
         return batch
 
-
-def mk_figqa_dataset(args, tokenizer, toy: bool = True):
+# return dataset with columns ['labels', 'input_ids', 'attention_mask'] and splits ['en_train', 'en_val', 'lang_test', 'lang_val']
+def mk_figqa_dataset(args, tokenizer, toy: bool = True, lang_test_size: float = 0.2):
     if not toy:
         data_files = {
-            'train': '../langdata/en_train.csv',
-            'val': '../langdata/en_dev.csv',
-            'test': f'../langdata/{args["lang"]}.csv',
+            'en_train': '../langdata/en_train.csv',
+            'en_val': '../langdata/en_dev.csv',
+            'lang_unsplit': f'../langdata/{args["lang"]}.csv',
         }
         raw_datasets = load_dataset('csv', data_files=data_files)
+        
+        raw_datasets_lang_split = raw_datasets["lang_unsplit"].train_test_split(test_size=lang_test_size, seed=42)
+        raw_datasets['lang_test'] = raw_datasets_lang_split.pop('train')
+        raw_datasets['lang_val'] = raw_datasets_lang_split.pop('test')
+        raw_datasets.pop('lang_unsplit')
+        
     else:
         raw_datasets = toy_figqa_dataset
     
@@ -442,17 +455,16 @@ def mk_figqa_dataset(args, tokenizer, toy: bool = True):
         return tokenized_inputs
     
     figqa_datasets = raw_datasets.map(
-        preprocess_function, batched=True, remove_columns=raw_datasets['train'].column_names
+        preprocess_function, batched=True, remove_columns=raw_datasets['en_train'].column_names
     )
-    figqa_datasets
     
     print('figqa data looks like:')
-    print('train:', figqa_datasets['train'][0])
-    print('decoded:', list(map(tokenizer.decode, figqa_datasets['train'][0]['input_ids'])))
-    print('val:', figqa_datasets['val'][0])
-    print('decoded:', list(map(tokenizer.decode, figqa_datasets['val'][0]['input_ids'])))
-    print('test:', figqa_datasets['test'][0])
-    print('decoded:', list(map(tokenizer.decode, figqa_datasets['test'][0]['input_ids'])))
+    print('en_train:', figqa_datasets['en_train'][0])
+    print('decoded:', list(map(tokenizer.decode, figqa_datasets['en_train'][0]['input_ids'])))
+    print('en_val:', figqa_datasets['en_val'][0])
+    print('decoded:', list(map(tokenizer.decode, figqa_datasets['en_val'][0]['input_ids'])))
+    print('test:', figqa_datasets['lang_test'][0])
+    print('decoded:', list(map(tokenizer.decode, figqa_datasets['lang_test'][0]['input_ids'])))
     
     figqa_data_collator = DataCollatorForMultipleChoice(
         tokenizer, 

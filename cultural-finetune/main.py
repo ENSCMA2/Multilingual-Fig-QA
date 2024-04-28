@@ -8,6 +8,7 @@ from accelerate.utils import set_seed
 import psutil
 import random
 import wandb
+from peft import PeftModel, PeftConfig
 
 # TODOs
 # - make real validation sets?
@@ -16,7 +17,22 @@ import wandb
 def gt_args():
     global args
     parser = argparse.ArgumentParser(description='Make dataset')
-    parser.add_argument('--pretrained_model', type=str, choices=['xlm-roberta-base', 'bert-base-multilingual-cased', 'xlm-roberta-large'], default='xlm-roberta-base')
+    parser.add_argument('--pretrained_model', type=str, 
+        choices=[
+            'xlm-roberta-base', 
+            'bert-base-multilingual-cased', 
+            'xlm-roberta-large',
+        ], 
+        default='xlm-roberta-base'
+    )
+    parser.add_argument('--finetuned_model', type=str, 
+        choices=[
+            'su-1-0.005-100-4106092417-lora', 
+            'su-1-0.005-10000-4106092417-lora',
+            'jv-1-0.005-10000-4106092417-lora',
+        ], 
+        default=None
+    )
     parser.add_argument('--cultural_corpus', type=str, choices=['su-bm25-50000', 'jv-bm25-50000', 'yo-bm25-10000', 'kn-bm25-50000', 'sw-bm25-50000'], default='su-bm25-50000')
     parser.add_argument('--lang', type=str, choices=["hi", "id", "jv", "kn", "su", "sw", "yo"], default='su')
     
@@ -94,10 +110,15 @@ def eval_mc(
     global_epoch,
     global_step,
     prefix: str,
-):
+    write_prog_bar_val_mc_acc: bool = False
+) -> None:
     figqa_samples_seen = 0
     figqa_metric = evaluate.load("accuracy")
-    for step, figqa_batch in enumerate(figqa_eval_dataloader):
+
+    epochbar = tqdm(enumerate(figqa_eval_dataloader), unit="batch", leave=False, total = len(figqa_eval_dataloader))
+    epochbar.set_description(f"Eval Epoch {global_epoch}")
+
+    for step, figqa_batch in epochbar:
         with torch.no_grad():
             mc_logits, mc_loss = model.mc_forward(figqa_batch)
         predictions = mc_logits.argmax(dim=-1)
@@ -107,9 +128,10 @@ def eval_mc(
         figqa_metric.add_batch(predictions=predictions,references=references,)
     eval_figqa_metric = figqa_metric.compute()
     # print(f'🪄 figqa val metric: {eval_figqa_metric}')
-    run.log({f"val/{prefix}_mc_acc": eval_figqa_metric['accuracy'], "epoch": global_epoch, "step": global_step})
-    trainloopbar.set_postfix(val_mc_acc=eval_figqa_metric['accuracy'])
+    return eval_figqa_metric['accuracy']
+        
 
+# WARN: using this to train figqa is deprecated
 def run_interleaved_train_loop(
     args,
     run,
@@ -119,7 +141,7 @@ def run_interleaved_train_loop(
     optimizer,
     lr_scheduler,
     figqa_train_dataloader,
-    figqa_val_dataloader,
+    figqa_val_dataloader, # backward competibility: use figqa_en_val_dataloader
     figqa_test_dataloader,
     accelerator,
     lm_corpus,
@@ -195,9 +217,80 @@ def run_interleaved_train_loop(
         if interleave_probs[0] != 1.0 and global_epoch % 16 == 0:
             eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
         if global_epoch % 2 == 0:
-            eval_mc(run, model, figqa_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='en')
-            eval_mc(run, model, figqa_test_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='lang')
+            eval_mc(run, model, figqa_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='val/en')
+            eval_mc(run, model, figqa_test_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='val/lang')
 
+def run_figqa_train_loop(
+    args,
+    run,
+    epoch_stats,
+    model: MultiTaskModel, 
+    corpus_train_dataloader,
+    corpus_val_dataloader,
+    optimizer,
+    lr_scheduler,
+    figqa_en_train_dataloader,
+    figqa_en_val_dataloader,
+    figqa_lang_val_dataloader,
+    figqa_lang_test_dataloader,
+    accelerator,
+    lm_corpus,
+    figqa_datasets,
+    num_epochs, 
+    global_epoch: int,
+    global_step: int,
+    gradient_accumulation_steps = 8,
+):
+
+    trainloopbar = tqdm(range(num_epochs), unit="epoch")
+    trainloopbar.set_description(f"Train loop")
+    for _ in trainloopbar:
+        # print("\n\n==========\n🔄 EPOCH: ", global_epoch)
+        
+        # 1 > train
+        # interleave: by probability, cycle through datasets, break at max interleave step
+        model.train()
+        epochbar = tqdm(enumerate(figqa_en_train_dataloader), unit="batch", leave=False, total = len(figqa_en_train_dataloader))
+        epochbar.set_description(f"Epoch {global_epoch}")
+        for step, figqa_batch in epochbar:
+            run.log({"train/lr": optimizer.param_groups[0]['lr'], "epoch": global_epoch, "step": global_step})
+            
+            mc_logits, mc_loss = model.mc_forward(figqa_batch)
+            run.log({"train/mc_loss": mc_loss.item(), "epoch": global_epoch, "step": global_step})
+            epochbar.set_postfix(train_mc_loss=mc_loss.item())
+            loss = args.mc_loss_weight * mc_loss
+            
+            loss = loss / gradient_accumulation_steps
+            run.log({"train/scaled_loss": loss.item(), "epoch": global_epoch, "step": global_step})
+            accelerator.backward(loss)  
+            
+            lr_scheduler.step()
+            if step % gradient_accumulation_steps == 0 or step == len(figqa_en_train_dataloader) - 1:
+                optimizer.step()
+                optimizer.zero_grad()
+            global_step+=1            
+            
+        # 2 > validate
+        model.eval()
+        if global_epoch % 24 == 0:
+            eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
+        
+        en_val_acc = eval_mc(run, model, figqa_en_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='val/en')
+        run.log({f"val/en_mc_acc": en_val_acc, "epoch": global_epoch, "step": global_step})
+        trainloopbar.set_postfix(val_mc_acc=eval_figqa_metric['accuracy'])
+        lang_val_acc = eval_mc(run, model, figqa_lang_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='val/lang')
+        run.log({f"val/lang_mc_acc": lang_val_acc, "epoch": global_epoch, "step": global_step})
+        lang_test_acc = eval_mc(run, model, figqa_lang_test_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='test/lang')
+        run.log({f"test/lang_mc_acc": lang_test_acc, "epoch": global_epoch, "step": global_step})
+        
+        epoch_stats.append({
+            'global_epoch': global_epoch,
+            'val/en_mc_acc': en_val_acc,
+            'val/lang_mc_acc': lang_val_acc,
+            'test/lang_mc_acc': lang_test_acc,
+        })
+        
+        global_epoch+=1
 
 def run_test_loop(
     args,
@@ -243,12 +336,19 @@ def main(args):
         modules_to_save=["pooler", "mlm_head", "mc_head"],
     ))
     print(f'trainable: {model.print_trainable_parameters()}')
+    if args.finetuned_model is not None:
+        model = PeftModel.from_pretrained(model, 'chaosarium/cultural-finetune', revision=args.finetuned_model, is_trainable=True)
+        print("❗ LOADED CULTURAL FINETUNED PARAMETERS ❗")
+        print("we'll further train the following:")
+        for name, param in model.named_parameters():
+            if param.requires_grad:
+                print(name)
 
     # 2 > load datasets
     print("⛳ 2. loading datasets")
     print("=== figqa data ===")
     figqa_datasets, figqa_data_collator = mk_figqa_dataset(vars(args), tokenizer, toy=args.dev)
-    figqa_train_dataloader, figqa_val_dataloader, figqa_test_dataloader = mk_figqa_dataloaders(figqa_datasets, figqa_data_collator, model.tokenizer, vars(args))
+    figqa_en_train_dataloader, figqa_en_val_dataloader, figqa_lang_val_dataloader, figqa_lang_test_dataloader = mk_figqa_dataloaders(figqa_datasets, figqa_data_collator, model.tokenizer, vars(args))
 
     print("\n=== cultural data ===")
     lm_corpus, corpus_mask_collator, corpus_wwm_collator = mk_corpus(vars(args), tokenizer, toy=args.dev)
@@ -269,6 +369,7 @@ def main(args):
     wandb.define_metric(f'val/lang_mc_acc', summary='max')
     wandb.define_metric(f'val/mlm_perplexity', summary='max')
     wandb.define_metric(f'val/mlm_loss', summary='max')
+    epoch_stats = []
 
     # 4 > train corpus only
     print("⛳ 4. cultural-extract corpus training")
@@ -280,7 +381,7 @@ def main(args):
         num_training_steps=args.num_corpus_epochs*len(corpus_train_dataloader),
     )
     accelerator = Accelerator(cpu=False)
-    model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader)
+    model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_en_train_dataloader, figqa_en_val_dataloader, figqa_lang_val_dataloader, figqa_lang_test_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_en_train_dataloader, figqa_en_val_dataloader, figqa_lang_val_dataloader, figqa_lang_test_dataloader)
     run_interleaved_train_loop(
         args=args,
         run=run,
@@ -289,9 +390,9 @@ def main(args):
         corpus_val_dataloader=corpus_val_dataloader,
         optimizer=optimizer,
         lr_scheduler=lr_scheduler,
-        figqa_train_dataloader=figqa_train_dataloader,
-        figqa_val_dataloader=figqa_val_dataloader,
-        figqa_test_dataloader=figqa_test_dataloader,
+        figqa_train_dataloader=figqa_en_train_dataloader,
+        figqa_val_dataloader=figqa_en_val_dataloader,
+        figqa_test_dataloader=figqa_lang_test_dataloader,
         accelerator=accelerator,
         lm_corpus=lm_corpus,
         figqa_datasets=figqa_datasets,
@@ -317,7 +418,7 @@ def main(args):
         num_training_steps=args.num_interleaved_epochs*args.steps_per_interleaved_epoch,
     )
     accelerator = Accelerator(cpu=False)
-    model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader)
+    model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_en_train_dataloader, figqa_en_val_dataloader, figqa_lang_val_dataloader, figqa_lang_test_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_en_train_dataloader, figqa_en_val_dataloader, figqa_lang_val_dataloader, figqa_lang_test_dataloader)
     run_interleaved_train_loop(
         args=args,
         run=run,
@@ -326,9 +427,9 @@ def main(args):
         corpus_val_dataloader=corpus_val_dataloader,
         optimizer=optimizer,
         lr_scheduler=lr_scheduler,
-        figqa_train_dataloader=figqa_train_dataloader,
-        figqa_val_dataloader=figqa_val_dataloader,
-        figqa_test_dataloader=figqa_test_dataloader,
+        figqa_train_dataloader=figqa_en_train_dataloader,
+        figqa_val_dataloader=figqa_en_val_dataloader,
+        figqa_test_dataloader=figqa_lang_test_dataloader,
         accelerator=accelerator,
         lm_corpus=lm_corpus,
         figqa_datasets=figqa_datasets,
@@ -346,46 +447,38 @@ def main(args):
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
-        num_warmup_steps=(args.num_figqa_epochs*len(figqa_train_dataloader))//10,
-        num_training_steps=args.num_figqa_epochs*len(figqa_train_dataloader),
+        num_warmup_steps=math.floor((args.num_figqa_epochs*len(figqa_en_train_dataloader)) * 0.15),
+        num_training_steps=args.num_figqa_epochs*len(figqa_en_train_dataloader),
     )
     accelerator = Accelerator(cpu=False)
-    model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_train_dataloader, figqa_test_dataloader, figqa_val_dataloader)
-    run_interleaved_train_loop(
+    model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_en_train_dataloader, figqa_en_val_dataloader, figqa_lang_val_dataloader, figqa_lang_test_dataloader = accelerator.prepare(model, optimizer, lr_scheduler, corpus_train_dataloader, corpus_val_dataloader, figqa_en_train_dataloader, figqa_en_val_dataloader, figqa_lang_val_dataloader, figqa_lang_test_dataloader)
+    run_figqa_train_loop(
         args=args,
         run=run,
+        epoch_stats=epoch_stats,
         model=model,
         corpus_train_dataloader=corpus_train_dataloader,
         corpus_val_dataloader=corpus_val_dataloader,
         optimizer=optimizer,
         lr_scheduler=lr_scheduler,
-        figqa_train_dataloader=figqa_train_dataloader,
-        figqa_val_dataloader=figqa_val_dataloader,
-        figqa_test_dataloader=figqa_test_dataloader,
+        figqa_en_train_dataloader=figqa_en_train_dataloader,
+        figqa_en_val_dataloader=figqa_en_val_dataloader,
+        figqa_lang_val_dataloader=figqa_lang_val_dataloader,
+        figqa_lang_test_dataloader=figqa_lang_test_dataloader,
         accelerator=accelerator,
         lm_corpus=lm_corpus,
         figqa_datasets=figqa_datasets,
-        steps_per_epoch=len(figqa_train_dataloader),
         num_epochs=args.num_figqa_epochs,
         global_epoch=global_epoch,
         global_step=global_step,
-        interleave_probs=[0.0, 1.0],
         gradient_accumulation_steps=args.gradient_accumulation_steps,
     )
 
-    # 7 > test
-    print("⛳ 4. testing")
-    run_test_loop(
-        args,
-        run,
-        model, 
-        figqa_train_dataloader,
-        figqa_val_dataloader,
-        figqa_test_dataloader,
-        accelerator,
-        global_epoch,
-        global_step,
-    )
+    # 7 > grab test acc for epoch with best val acc (TODO this is really a hack without blowing up disk with checkpoints)
+    print("⛳ 7. extracting test result")
+    epoch_stats_sorted = sorted(epoch_stats, key=lambda entry: entry['val/lang_mc_acc'], reverse=True)
+    run.log({"test/mc_acc": epoch_stats_sorted[0]['test/lang_mc_acc'], "epoch": epoch_stats_sorted[0]['global_epoch']})
+
 
 if __name__ == '__main__':
     args = gt_args()
