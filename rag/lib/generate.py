@@ -24,10 +24,13 @@ def log(txt):
     with open("log.txt", "a") as o:
         o.write(f"{txt}\n")
 
-def format_documents(docs: list[Document]):
+def format_documents(docs: list[Document] | list[str]):
     res = ['']
     for doc in docs:
-        res.append(doc.page_content)
+        if type(doc) != str:
+            res.append(doc.page_content)
+        else:
+            res.append(doc)
     res.append('')
     
     return "\n-----\n".join(res)
