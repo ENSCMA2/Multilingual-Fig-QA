@@ -53,7 +53,7 @@ def mk_retriever(args, dataset, do_index: bool):
             raise ValueError
 
 def mk_generator(args):
-    return TogetherGeneratorBase(model_name = args.generator, api_key = "e7ca8611cd31e8d7a42c4ebec13d273ac01da59a2f853f7db00355f0368e8ba6")
+    return TogetherGeneratorBase(model_name = args.generator, api_key = "36d73370984c6c1b82a96910d7b95d274a2d58b8d51a53b06299fb45b29b040b")
 
 def prompt_template(batch):
     q = batch["startphrase"]
