@@ -277,7 +277,7 @@ def run_figqa_train_loop(
         
         en_val_acc = eval_mc(run, model, figqa_en_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='val/en')
         run.log({f"val/en_mc_acc": en_val_acc, "epoch": global_epoch, "step": global_step})
-        trainloopbar.set_postfix(val_mc_acc=eval_figqa_metric['accuracy'])
+        trainloopbar.set_postfix(val_mc_acc=en_val_acc)
         lang_val_acc = eval_mc(run, model, figqa_lang_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='val/lang')
         run.log({f"val/lang_mc_acc": lang_val_acc, "epoch": global_epoch, "step": global_step})
         lang_test_acc = eval_mc(run, model, figqa_lang_test_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='test/lang')
@@ -291,33 +291,6 @@ def run_figqa_train_loop(
         })
         
         global_epoch+=1
-
-def run_test_loop(
-    args,
-    run,
-    model: MultiTaskModel, 
-    figqa_train_dataloader,
-    figqa_val_dataloader,
-    figqa_test_dataloader,
-    accelerator,
-    global_epoch: int,
-    global_step: int,
-):
-    model.eval()
-    print('🧪 testing figqa...')
-    figqa_samples_seen = 0
-    figqa_metric = evaluate.load("accuracy")
-    for step, figqa_batch in enumerate(figqa_test_dataloader):
-        with torch.no_grad():
-            mc_logits, mc_loss = model.mc_forward(figqa_batch)
-        predictions = mc_logits.argmax(dim=-1)
-        predictions, references = accelerator.gather((predictions, figqa_batch["labels"]))
-        # If we are in a multiprocess environment, we're cooked
-        if accelerator.num_processes > 1: assert(False)
-        figqa_metric.add_batch(predictions=predictions,references=references,)
-    eval_figqa_metric = figqa_metric.compute()
-    print(f'🪄 figqa metric: {eval_figqa_metric}')
-    run.log({"test/mc_acc": eval_figqa_metric['accuracy'], "epoch": global_epoch, "step": global_step})
 
 def main(args):
 
@@ -367,6 +340,7 @@ def main(args):
     wandb.define_metric(f'test/mc_acc')
     wandb.define_metric(f'val/en_mc_acc', summary='max')
     wandb.define_metric(f'val/lang_mc_acc', summary='max')
+    wandb.define_metric(f'test/lang_mc_acc', summary='max')
     wandb.define_metric(f'val/mlm_perplexity', summary='max')
     wandb.define_metric(f'val/mlm_loss', summary='max')
     epoch_stats = []
@@ -476,7 +450,7 @@ def main(args):
 
     # 7 > grab test acc for epoch with best val acc (TODO this is really a hack without blowing up disk with checkpoints)
     print("⛳ 7. extracting test result")
-    epoch_stats_sorted = sorted(epoch_stats, key=lambda entry: entry['val/lang_mc_acc'], reverse=True)
+    epoch_stats_sorted = sorted(epoch_stats, key=lambda entry: entry['val/lang_mc_acc'] + 0.5*entry['val/en_mc_acc'], reverse=True)
     run.log({"test/mc_acc": epoch_stats_sorted[0]['test/lang_mc_acc'], "epoch": epoch_stats_sorted[0]['global_epoch']})
 
 
