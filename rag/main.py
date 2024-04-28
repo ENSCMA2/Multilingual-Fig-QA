@@ -7,7 +7,7 @@ from wikidata.client import Client
 from tqdm import tqdm
 from lib.pipeline import RAGPipeline
 from lib.preprocess import TextDataset, splitter_choices
-from lib.retrieval import BM25Retriever, VectorRetriever
+from lib.retrieval import WikidataRetriever, BM25Retriever, VectorRetriever
 from lib.generate import TogetherGeneratorBase
 import pandas as pd
 import time

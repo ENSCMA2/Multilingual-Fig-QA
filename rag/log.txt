@@ -68726,3 +68726,49 @@ model output: 2
 model output: 2
 model output: 2
 model output: 2
+name is main
+made generator
+made dataset
+name is main
+made generator
+made dataset
+name is main
+made generator
+name is main
+made generator
+made dataset
+made retriever
+made pipeline
+read testset
+0
+'Nyawang esemmu sing rupane kaya ngemut glali'
+Which of the following corresponds to the meaning of the phrase above, enclosed in single quotes?
+1: Nyawang esemmu sing manis
+2: Nyawang esemmu sing pahit
+Respond with a single number: 1 or 2.
+Nyawang esemmu sing rupane kaya ngemut glali
+Nyawang esemmu sing manis
+Nyawang esemmu sing pahit
+0
+in retrieval pass
+objects:   Sure, I'd be happy to help! Here are the objects of the three sentences you
+name is main
+made generator
+made dataset
+made retriever
+made pipeline
+read testset
+0
+'Look at your smile that looks like you're looking at it'
+Which of the following corresponds to the meaning of the phrase above, enclosed in single quotes?
+1: Look at your sweet smile
+2: Look at your bitter smile
+Respond with a single number: 1 or 2.
+Look at your smile that looks like you're looking at it
+Look at your sweet smile
+Look at your bitter smile
+0
+in retrieval pass
+objects:   Sure, I'd be happy to help! Here are the objects of the three sentences you
+name is main
+made generator

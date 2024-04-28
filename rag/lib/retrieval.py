@@ -68,7 +68,7 @@ class WikidataRetriever(RetrieverBase):
     def __init__(self):
         pass
 
-    def query(self, query, lang, model, k = None,):
+    def query(self, query, lang, k = None,):
         results = []
         for q in query:
             clean = q.strip()
