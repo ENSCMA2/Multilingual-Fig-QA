@@ -67,8 +67,9 @@ Respond with a single number: 1 or 2.'''
     return u, "\n".join([q, o1, o2])
 
 def do_evaluation(generator: TogetherGeneratorBase, args):
+    prefix = "" if args.testset == "langdata" else "translated_"
     
-    with open(f'../experiment/{args.retriever}/{args.lang}/retrieval_acc.pkl', 'rb') as file:
+    with open(f'../experiment/{args.retriever}/{args.lang}/{prefix}retrieval_acc.pkl', 'rb') as file:
         retrieval_acc = pickle.load(file)
         
     res_acc = []
@@ -147,7 +148,8 @@ def log(txt):
 
 def do_retrieval(pipeline: RAGPipeline, args):
     output_dir = f'../experiment/{args.retriever}/{args.lang}'
-    if not os.path.exists(f"{output_dir}/retrieval_acc.pkl"):
+    prefix = "" if args.testset == "langdata" else "translated_"
+    if not os.path.exists(f"{output_dir}/{prefix}retrieval_acc.pkl"):
         testset = pd.read_csv(f"../{args.testset}/{args.lang}.csv")
         retrieval_acc = []
         log("read testset")
@@ -170,7 +172,7 @@ def do_retrieval(pipeline: RAGPipeline, args):
         if not os.path.exists(output_dir):
             os.makedirs(output_dir)
 
-        with open(f'{output_dir}/retrieval_acc.pkl', 'wb') as f:
+        with open(f'{output_dir}/{prefix}retrieval_acc.pkl', 'wb') as f:
             pickle.dump(retrieval_acc, f)
         
 if __name__ == '__main__':
