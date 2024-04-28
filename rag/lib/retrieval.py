@@ -77,6 +77,7 @@ class WikidataRetriever(RetrieverBase):
             result = json.loads(requests.get(url).text)["search"]
             if len(result) > 0:
                 results.extend([f"{q}: {item['description']}" for item in result])
+        print("wiki results:", results)
         return results
 
 class VectorRetriever(RetrieverBase):
