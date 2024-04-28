@@ -209,17 +209,17 @@ def run_interleaved_train_loop(
                 optimizer.zero_grad()
             global_step+=1
             
-            if step % 256 == 0:
+            if global_step % 2048 == 0:
                 eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
             
         global_epoch+=1
             
         # 2 > validate
         model.eval()
-        if interleave_probs[0] == 1.0:
-            eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
-        if interleave_probs[0] != 1.0 and global_epoch % 16 == 0:
-            eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
+        # if interleave_probs[0] == 1.0:
+        #     eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
+        # if interleave_probs[0] != 1.0 and global_epoch % 16 == 0:
+        #     eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
         if global_epoch % 2 == 0:
             eval_mc(run, model, figqa_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='val/en')
             eval_mc(run, model, figqa_test_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='val/lang')

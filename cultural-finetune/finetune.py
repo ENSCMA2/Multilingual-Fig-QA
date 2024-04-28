@@ -401,7 +401,7 @@ class DataCollatorForMultipleChoice: # from multilingual figqa
         return batch
 
 # return dataset with columns ['labels', 'input_ids', 'attention_mask'] and splits ['en_train', 'en_val', 'lang_test', 'lang_val']
-def mk_figqa_dataset(args, tokenizer, toy: bool = True, lang_test_size: float = 0.2):
+def mk_figqa_dataset(args, tokenizer, toy: bool = True, lang_test_size: float = 0.33):
     if not toy:
         data_files = {
             'en_train': '../langdata/en_train.csv',
