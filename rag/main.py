@@ -180,7 +180,8 @@ if __name__ == '__main__':
     args = gt_args()
     generator = mk_generator(args)
     log("made generator")
-    if not os.path.exists(f"../experiment/{args.retriever}/{args.lang}/retrieval_acc.pkl"):
+    prefix = "" if args.testset == "langdata" else "translated_"
+    if not os.path.exists(f"../experiment/{args.retriever}/{args.lang}/{prefix}retrieval_acc.pkl"):
         dataset = mk_dataset(args)
         log("made dataset")
         retriever = mk_retriever(args, dataset, False)
