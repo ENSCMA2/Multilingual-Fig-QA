@@ -76,7 +76,9 @@ class WikidataRetriever(RetrieverBase):
             url = f"https://www.wikidata.org/w/api.php?action=wbsearchentities&search={q}&language={lang}&format=json"
             result = json.loads(requests.get(url).text)["search"]
             if len(result) > 0:
-                results.extend([f"{q}: {item['description']}" for item in result])
+                for res in result:
+                    if "description" in res.keys():
+                        results.append(f"{q}: {res['description']}")
         print("wiki results:", results)
         return results
 
