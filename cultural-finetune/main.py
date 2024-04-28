@@ -38,6 +38,8 @@ def gt_args():
     parser.add_argument('--mc_sample_weight', type=float, default=0.6)
     parser.add_argument('--mlm_loss_weight', type=float, default=1.0)
     
+    parser.add_argument('--stage_corpus', action="store_true")
+    
     parser.add_argument('--dev', action="store_true")
     parser.add_argument('--tags', type=str, nargs='*', default=[], help="Tags for wandb run")
     parser.add_argument("--seed", type=int, default=None)
@@ -186,31 +188,15 @@ def run_interleaved_train_loop(
             
         global_epoch+=1
             
-        # print('🏗️ training mlm...')
-        # for corpus_batch in corpus_train_dataloader:
-        #     mlm_logits, mlm_loss = model.mlm_forward(corpus_batch)
-        #     print("🎯 mlm loss: ", mlm_loss.item())
-        #     # accelerator.backward(mlm_loss)
-        #     mlm_loss.backward()
-        #     optimizer.step()
-        #     lr_scheduler.step()
-        #     optimizer.zero_grad()
-        
-        # print('🏗️ training figqa...')
-        # for figqa_batch in figqa_train_dataloader:
-        #     mc_logits, mc_loss = model.mc_forward(figqa_batch)
-        #     print("🎯 mc loss: ", mc_loss.item())
-        #     # accelerator.backward(mc_loss)
-        #     mc_loss.backward()
-        #     optimizer.step()
-        #     lr_scheduler.step()
-        #     optimizer.zero_grad()        
-        
         # 2 > validate
         model.eval()
-        eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
-        eval_mc(run, model, figqa_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='en')
-        eval_mc(run, model, figqa_test_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='lang')
+        if interleave_probs[0] == 1.0:
+            eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
+        if interleave_probs[0] != 1.0 and global_epoch % 16 == 0:
+            eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
+        if global_epoch % 2 == 0:
+            eval_mc(run, model, figqa_val_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='en')
+            eval_mc(run, model, figqa_test_dataloader, accelerator, trainloopbar, global_epoch, global_step, prefix='lang')
 
 
 def run_test_loop(
@@ -246,7 +232,17 @@ def main(args):
     print("⛳ 1. making tokenizer and models")
     tokenizer = mk_tokenizer(vars(args))
     mlm_model, mc_model = mk_models(vars(args))
-    model = MultiTaskModel(mlm_model, mc_model, tokenizer, use_lora=True)
+    model = MultiTaskModel(mlm_model, mc_model, tokenizer)
+    model = get_peft_model(model, LoraConfig(
+        r=16,
+        lora_alpha=32,
+        target_modules=["query", "value"],
+        # target_modules=["q_lin", "v_lin"],
+        lora_dropout=0.1,
+        # task_type=TaskType.FEATURE_EXTRACTION,
+        modules_to_save=["pooler", "mlm_head", "mc_head"],
+    ))
+    print(f'trainable: {model.print_trainable_parameters()}')
 
     # 2 > load datasets
     print("⛳ 2. loading datasets")
@@ -280,7 +276,7 @@ def main(args):
     lr_scheduler = get_scheduler(
         name='linear',
         optimizer=optimizer,
-        num_warmup_steps=(args.num_corpus_epochs*len(corpus_train_dataloader))//10,
+        num_warmup_steps=(args.num_corpus_epochs*len(corpus_train_dataloader))//15,
         num_training_steps=args.num_corpus_epochs*len(corpus_train_dataloader),
     )
     accelerator = Accelerator(cpu=False)
@@ -306,6 +302,10 @@ def main(args):
         interleave_probs=[1.0, 0.0],
         gradient_accumulation_steps=args.gradient_accumulation_steps,
     )
+
+    if (args.stage_corpus):
+        model.push_to_hub('chaosarium/cultural-finetune', revision=f'{args.lang}-{args.num_corpus_epochs}-{args.corpus_lr}-{args.corpus_truncate}-{args.seed}-lora')
+        return
 
     # 5 > train interleaved
     print("⛳ 5. interleaved training")
