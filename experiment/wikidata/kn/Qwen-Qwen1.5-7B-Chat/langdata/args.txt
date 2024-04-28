@@ -1,0 +1,1 @@
+Namespace(sleeptime=0.5, in_mem_index=True, lang='kn', testset='langdata', retriever='wikidata', generator='Qwen/Qwen1.5-7B-Chat', k=4)
