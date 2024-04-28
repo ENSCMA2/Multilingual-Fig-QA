@@ -183,7 +183,7 @@ if __name__ == '__main__':
         log("made dataset")
         retriever = mk_retriever(args, dataset, False)
         log("made retriever")
-        pipeline = RAGPipeline(retriever, generator, args.k, args.lang)
+        pipeline = RAGPipeline(retriever, generator, args.k, args.lang args.testset == "translate-test")
         log("made pipeline")
         do_retrieval(pipeline, args)
     do_evaluation(generator, args)

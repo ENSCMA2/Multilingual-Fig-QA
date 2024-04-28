@@ -9,15 +9,16 @@ def log(txt):
         o.write(f"{txt}\n")
 
 class RAGPipeline:
-    def __init__(self, retriever, generator, k, lang = None):
+    def __init__(self, retriever, generator, k, lang = None, translated = False):
         self.retriever: RetrieverBase = retriever
         self.generator: TogetherGeneratorBase = generator
         self.k = k
         self.lang = lang
+        self.translated = translated
 
     def retrieval_pass(self, question):
         log("in retrieval pass")
-        retrieved = self.retriever.query(self.generator.extract_objects(question), k=self.k, lang = self.lang)
+        retrieved = self.retriever.query(self.generator.extract_objects(question), k=self.k, lang = self.lang, translated = self.translated)
         return {
             "retrieved": retrieved,
         }

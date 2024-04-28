@@ -68,17 +68,20 @@ class WikidataRetriever(RetrieverBase):
     def __init__(self):
         pass
 
-    def query(self, query, lang, k = None,):
+    def query(self, query, lang, k = None, translated = False):
         results = []
         for q in query:
             clean = q.strip()
             clean = "".join([char for char in clean if char not in string.punctuation])
-            url = f"https://www.wikidata.org/w/api.php?action=wbsearchentities&search={q}&language={lang}&format=json"
-            result = json.loads(requests.get(url).text)["search"]
-            if len(result) > 0:
-                for res in result:
-                    if "description" in res.keys():
-                        results.append(f"{q}: {res['description']}")
+            l = lang if not translated else "en"
+            url = f"https://www.wikidata.org/w/api.php?action=wbsearchentities&search={q}&language={l}&format=json"
+            result = json.loads(requests.get(url).text)
+            if "search" in result.keys():
+                result = result["search"]
+                if len(result) > 0:
+                    for res in result:
+                        if "description" in res.keys():
+                            results.append(f"{q}: {res['description']}")
         print("wiki results:", results)
         return results
 
