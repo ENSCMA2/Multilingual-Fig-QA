@@ -1,7 +1,9 @@
 import argparse
 import datetime
 import json
-
+import requests
+import wptools
+from wikidata.client import Client
 from tqdm import tqdm
 from lib.pipeline import RAGPipeline
 from lib.preprocess import TextDataset, splitter_choices
@@ -19,7 +21,7 @@ def gt_args():
     parser.add_argument('--in_mem_index', action="store_true", default=True)
     parser.add_argument('--lang', type=str, choices=['jv', 'kn', 'su', 'sw'], default='jv')
     parser.add_argument('--testset', type=str, choices=['langdata', 'translate-test'], default='langdata')
-    parser.add_argument('--retriever', type=str, choices=['bm25', 'vec'], default='bm25')
+    parser.add_argument('--retriever', type=str, choices=['bm25', 'vec', 'wikidata'], default='bm25')
     parser.add_argument('--generator', 
                         type=str, 
                         choices=["meta-llama/Llama-2-7b-chat-hf", 
@@ -45,6 +47,8 @@ def mk_retriever(args, dataset, do_index: bool):
             return BM25Retriever(dataset=dataset)
         case 'vec':
             return VectorRetriever(dataset=dataset, model_name = "intfloat/e5-large-v2")
+        case 'wikidata':
+            return WikidataRetriever()
         case _:
             raise ValueError
 
@@ -179,7 +183,7 @@ if __name__ == '__main__':
         log("made dataset")
         retriever = mk_retriever(args, dataset, False)
         log("made retriever")
-        pipeline = RAGPipeline(retriever, generator, args.k)
+        pipeline = RAGPipeline(retriever, generator, args.k, args.lang)
         log("made pipeline")
         do_retrieval(pipeline, args)
     do_evaluation(generator, args)

@@ -59,7 +59,21 @@ class TogetherGeneratorBase():
         ext = extract_answer(predictions)
         return ext
 
-    def answer_with_context(self, question: str, documents: list[Document]) -> tuple[str, str, str]:
+    def extract_objects(self, question):
+        system_prompt = "You are a syntax parsing assistant. Generate a comma-separated list of answers."
+        user_prompt = f'''Extract the objects of the three sentences below.
+{question}
+Express your answer in the following format: 'object1, object2, object3'.'''
+        predictions = self.client.chat.completions.create(messages = 
+                                                        [{"role": "system",
+                                                          "content": system_prompt,},
+                                                         {"role": "user",
+                                                          "content": user_prompt,}],
+                                                     model=self.model_name,
+                                                     max_tokens = 20).choices[0].message.content
+        return predictions.strip("'").split(",")
+        
+    def answer_with_context(self, question: str, documents: list[Document] | list[str]) -> tuple[str, str, str]:
         formatted_docs = format_documents(documents)
         prompt = f'''{question}
 Here are some relevant documents that may help inform your answer.

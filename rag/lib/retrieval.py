@@ -18,6 +18,9 @@ from langchain_core.retrievers import BaseRetriever
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_community.vectorstores import Chroma
 import torch
+import requests
+import string
+import json
 
 class RetrieverBase:
     def __init__(self) -> None:
@@ -27,9 +30,11 @@ class RetrieverBase:
     
     def query(
         self,
-        query: str,
+        query: str | list[str],
         k: int = 5,
-    ) -> list[Document]:
+        lang: str = None,
+        model = None
+    ) -> list[Document] | list[str]:
         raise NotImplementedError
 
 class BM25Retriever(RetrieverBase):
@@ -46,6 +51,7 @@ class BM25Retriever(RetrieverBase):
         query: str,
         k: int = 5,
         verbose: bool = False,
+        lang: str = None
     ) -> list[Document]:
 
         res = self.bm25_retriever.get_relevant_documents(query)
@@ -57,6 +63,21 @@ class BM25Retriever(RetrieverBase):
                 print()
                 
         return res
+
+class WikidataRetriever(RetrieverBase):
+    def __init__(self):
+        pass
+
+    def query(self, query, lang, model, k = None,):
+        results = []
+        for q in query:
+            clean = q.strip()
+            clean = "".join([char for char in clean if char not in string.punctuation])
+            url = f"https://www.wikidata.org/w/api.php?action=wbsearchentities&search={q}&language={lang}&format=json"
+            result = json.loads(requests.get(url).text)["search"]
+            if len(result) > 0:
+                results.extend([f"{q}: {item['description']}" for item in result])
+        return results
 
 class VectorRetriever(RetrieverBase):
     def __init__(
@@ -80,6 +101,7 @@ class VectorRetriever(RetrieverBase):
         query: str,
         k: int = 5,
         verbose: bool = False,
+        lang: str = None
     ) -> list[Document]:
         print("in retrieval pass")
 

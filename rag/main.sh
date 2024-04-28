@@ -16,7 +16,7 @@ do
     for model in "meta-llama/Llama-2-7b-chat-hf" "mistralai/Mistral-7B-Instruct-v0.2" "Qwen/Qwen1.5-7B-Chat";
     do
         echo $model;
-        python main.py --lang $lang --testset langdata --generator $model --retriever vec
-        python main.py --lang $lang --testset translate-test --generator $model --retriever vec
+        python main.py --lang $lang --testset langdata --generator $model --retriever wikidata
+        python main.py --lang $lang --testset translate-test --generator $model --retriever wikidata
     done
 done
