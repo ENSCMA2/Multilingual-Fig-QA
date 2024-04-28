@@ -30,6 +30,10 @@ def gt_args():
             'su-1-0.005-100-4106092417-lora', 
             'su-1-0.005-10000-4106092417-lora',
             'jv-1-0.005-10000-4106092417-lora',
+
+            'yo-2-0.005-10000-4106092417-lora',
+            'kn-1-0.005-10000-4106092417-lora',
+            'sw-1-0.005-10000-4106092417-lora',
         ], 
         default=None
     )
@@ -332,7 +336,7 @@ def main(args):
         entity = 'chaosarium',
         project = 'multi', 
         config=vars(args),
-        tags=['corpus-interleave-figqa', args.lang] + args.tags,
+        tags=[args.lang] + args.tags,
         allow_val_change=True,
     )
     global_epoch = 0

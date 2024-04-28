@@ -410,7 +410,7 @@ def mk_figqa_dataset(args, tokenizer, toy: bool = True, lang_test_size: float = 
         }
         raw_datasets = load_dataset('csv', data_files=data_files)
         
-        raw_datasets_lang_split = raw_datasets["lang_unsplit"].train_test_split(test_size=lang_test_size, seed=0)
+        raw_datasets_lang_split = raw_datasets["lang_unsplit"].train_test_split(test_size=lang_test_size)
         raw_datasets['lang_test'] = raw_datasets_lang_split.pop('train')
         raw_datasets['lang_val'] = raw_datasets_lang_split.pop('test')
         raw_datasets.pop('lang_unsplit')
