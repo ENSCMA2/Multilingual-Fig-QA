@@ -25,11 +25,77 @@ srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py
 
 # hparam search
 wandb sweep sweep_configs/su_sweep.yaml
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 12:00:00 --pty wandb agent chaosarium/multi/ybhpbevi --count 10 # ran
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/ybhpbevi # ran
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 48:00:00 --pty wandb agent chaosarium/multi/lbdsdg62 # ran
 wandb sweep sweep_configs/yo_sweep.yaml
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/o092ps77 # ran
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 48:00:00 --pty wandb agent chaosarium/multi/the9166i # ran
 wandb sweep sweep_configs/jv_sweep.yaml
-srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=16g -t 48:00:00 --pty wandb agent chaosarium/multi/wuocddqs # ran
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 48:00:00 --pty wandb agent chaosarium/multi/umwr1i3s # ran
 wandb sweep sweep_configs/kn_sweep.yaml
 wandb sweep sweep_configs/sw_sweep.yaml
+
+# try lora
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 6:00:00 --pty python main.py --tags wherewestand3 --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 3 --num_interleaved_epochs 50 --num_figqa_epochs 60 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 1e-5 --interleave_lr 8e-6 --figqa_lr 5e-6 --batch_size 32 --steps_per_interleaved_epoch 32 --corpus_truncate 20000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 16 # ran
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 6:00:00 --pty python main.py --tags wherewestand3 --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 1 --num_interleaved_epochs 50 --num_figqa_epochs 60 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 2e-5 --interleave_lr 1e-5 --figqa_lr 1e-5 --batch_size 32 --steps_per_interleaved_epoch 32 --corpus_truncate 20000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 16 # ran
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 6:00:00 --pty python main.py --tags wherewestand3 --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 2 --num_interleaved_epochs 50 --num_figqa_epochs 60 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 2e-5 --interleave_lr 1e-5 --figqa_lr 1e-5 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 16 # ran
+
+# try no interleave
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 6:00:00 --pty python main.py --tags wherewestand3 --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 2 --num_interleaved_epochs 0 --num_figqa_epochs 80 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 3e-5 --interleave_lr 1e-5 --figqa_lr 1e-5 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 5000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 16 # ran
+
+
+# hparam guessing
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 4:00:00 --pty python main.py --tags hparamguess --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 2 --num_interleaved_epochs 0 --num_figqa_epochs 80 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 1e-4 --interleave_lr 1e-5 --figqa_lr 1e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 # ran
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 4:00:00 --pty python main.py --tags hparamguess --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 2 --num_interleaved_epochs 0 --num_figqa_epochs 80 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-4 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 # ran
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 4:00:00 --pty python main.py --tags hparamguess --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 2 --num_interleaved_epochs 0 --num_figqa_epochs 80 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-5 --interleave_lr 1e-5 --figqa_lr 5e-5 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 # ran
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 4:00:00 --pty python main.py --tags hparamguess --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 2 --num_interleaved_epochs 0 --num_figqa_epochs 80 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-3 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 # ran
+
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 4:00:00 --pty python main.py --tags hparamguess --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 80 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-3 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 4:00:00 --pty python main.py --tags hparamguess --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 80 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 4:00:00 --pty python main.py --tags hparamguess --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 80 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 1e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8
+
+
+# saving lora pretrained moedl su
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 5 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 2000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 100 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+
+# fine tune other langs 10000 [ran]
+# jv [concluded]
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus jv-bm25-50000 --lang jv --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+# yo []
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus yo-bm25-10000 --lang yo --num_corpus_epochs 2 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+# kn [concluded]
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus kn-bm25-50000 --lang kn --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+# kn []
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 8:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus sw-bm25-50000 --lang sw --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 5e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 10000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+
+# fine tune other langs 20000 [ran]
+# su []
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 3e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 20000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+# jv []
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus jv-bm25-50000 --lang jv --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 3e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 20000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+# kn []
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus kn-bm25-50000 --lang kn --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 3e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 20000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+# sw []
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 6:00:00 --pty python main.py --tags finetune --pretrained_model xlm-roberta-base --cultural_corpus sw-bm25-50000 --lang sw --num_corpus_epochs 1 --num_interleaved_epochs 0 --num_figqa_epochs 0 --mc_loss_weight 2.0 --mlm_loss_weight 1.0 --mc_sample_weight 0.6 --corpus_lr 3e-3 --interleave_lr 1e-5 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32 --corpus_truncate 20000 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --stage_corpus
+
+
+
+# directly finetuned_model (dev)
+srun --cpus-per-gpu 1 --gres=gpu:8000:1 --mem=8g -t 4:00:00 --pty bash
+python main.py --tags figqa_from_finetuned --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 0 --num_interleaved_epochs 0 --num_figqa_epochs 100 --mc_loss_weight 1.0 --figqa_lr 1e-3 --batch_size 64 --steps_per_interleaved_epoch 32  --corpus_truncate 500 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --finetuned_model su-1-0.005-10000-4106092417-lora
+python main.py --tags figqa_from_finetuned --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 0 --num_interleaved_epochs 0 --num_figqa_epochs 200 --mc_loss_weight 1.0 --figqa_lr 4e-4 --batch_size 64 --steps_per_interleaved_epoch 32  --corpus_truncate 500 --seed 4106092417 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --finetuned_model su-1-0.005-10000-4106092417-lora
+
+python main.py --tags figqa_from_finetuned --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 0 --num_interleaved_epochs 0 --num_figqa_epochs 120 --mc_loss_weight 1.0 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32  --corpus_truncate 500 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --finetuned_model su-1-0.005-10000-4106092417-lora
+
+
+# figqa finetue experiments
+## su
+python main.py --tags report1 --pretrained_model xlm-roberta-base --cultural_corpus su-bm25-50000 --lang su --num_corpus_epochs 0 --num_interleaved_epochs 0 --num_figqa_epochs 120 --mc_loss_weight 1.0 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32  --corpus_truncate 500 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --finetuned_model su-1-0.005-10000-4106092417-lora
+## jv
+python main.py --tags report1 --pretrained_model xlm-roberta-base --cultural_corpus jv-bm25-50000 --lang jv --num_corpus_epochs 0 --num_interleaved_epochs 0 --num_figqa_epochs 120 --mc_loss_weight 1.0 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32  --corpus_truncate 500 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --finetuned_model jv-1-0.005-10000-4106092417-lora
+## yo
+python main.py --tags report1 --pretrained_model xlm-roberta-base --cultural_corpus yo-bm25-50000 --lang yo --num_corpus_epochs 0 --num_interleaved_epochs 0 --num_figqa_epochs 120 --mc_loss_weight 1.0 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32  --corpus_truncate 500 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --finetuned_model yo-2-0.005-10000-4106092417-lora
+## kn
+python main.py --tags report1 --pretrained_model xlm-roberta-base --cultural_corpus kn-bm25-50000 --lang kn --num_corpus_epochs 0 --num_interleaved_epochs 0 --num_figqa_epochs 120 --mc_loss_weight 1.0 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32  --corpus_truncate 500 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --finetuned_model kn-1-0.005-10000-4106092417-lora
+## sw
+python main.py --tags report1 --pretrained_model xlm-roberta-base --cultural_corpus sw-bm25-50000 --lang sw --num_corpus_epochs 0 --num_interleaved_epochs 0 --num_figqa_epochs 120 --mc_loss_weight 1.0 --figqa_lr 5e-4 --batch_size 64 --steps_per_interleaved_epoch 32  --corpus_truncate 500 --corpus_chunk_size 128 --gradient_accumulation_steps 8 --finetuned_model sw-1-0.005-10000-4106092417-lora
