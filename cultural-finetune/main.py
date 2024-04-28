@@ -86,7 +86,7 @@ def eval_mlm(
 def eval_mc(
     run,
     model,
-    figqa_val_dataloader,
+    figqa_eval_dataloader,
     accelerator,
     trainloopbar,
     global_epoch,
@@ -95,7 +95,7 @@ def eval_mc(
 ):
     figqa_samples_seen = 0
     figqa_metric = evaluate.load("accuracy")
-    for step, figqa_batch in enumerate(figqa_val_dataloader):
+    for step, figqa_batch in enumerate(figqa_eval_dataloader):
         with torch.no_grad():
             mc_logits, mc_loss = model.mc_forward(figqa_batch)
         predictions = mc_logits.argmax(dim=-1)
@@ -143,7 +143,7 @@ def run_interleaved_train_loop(
         epochbar = tqdm(range(steps_per_epoch), unit="batch", leave=False)
         epochbar.set_description(f"Epoch {global_epoch}")
         for step in epochbar:
-            run.log({"train/lr": optimizer.param_groups[0]['lr']})
+            run.log({"train/lr": optimizer.param_groups[0]['lr'], "epoch": global_epoch, "step": global_step})
             interleave_index = torch.multinomial(torch.tensor(interleave_probs), 1).item()
             if interleave_index == 0:
                 corpus_batch = iter_next(corpus_train_iterator)
@@ -180,6 +180,10 @@ def run_interleaved_train_loop(
                 optimizer.step()
                 optimizer.zero_grad()
             global_step+=1
+            
+            if step % 256 == 0:
+                eval_mlm(run, model, corpus_val_dataloader, accelerator, lm_corpus, trainloopbar, global_epoch, global_step)
+            
         global_epoch+=1
             
         # print('🏗️ training mlm...')
