@@ -51,7 +51,8 @@ class BM25Retriever(RetrieverBase):
         query: str | list[str],
         k: int = 5,
         verbose: bool = False,
-        lang: str = None
+        lang: str = None,
+        translated = False
     ) -> list[Document]:
 
         if type(query) != str:
