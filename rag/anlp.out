@@ -106,3 +106,7 @@ split into 912010 documents with max len 150
 Namespace(sleeptime=0.5, in_mem_index=True, lang='sw', testset='translate-test', retriever='bm25tok', generator='mistralai/Mistral-7B-Instruct-v0.2', k=4)
 <lib.preprocess.TextDataset object at 0x7f20422c4bd0>
 ../experiment/bm25tok/sw
+done evaluating!
+results dumped to ../experiment/bm25tok/sw/mistralai-Mistral-7B-Instruct-v0.2/translate-test/
+   Accuracy
+0  0.541401
