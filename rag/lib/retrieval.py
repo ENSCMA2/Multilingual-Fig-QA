@@ -48,11 +48,14 @@ class BM25Retriever(RetrieverBase):
 
     def query(
         self,
-        query: str,
+        query: str | list[str],
         k: int = 5,
         verbose: bool = False,
         lang: str = None
     ) -> list[Document]:
+
+        if type(query) != str:
+            query = " ".join(query)
 
         res = self.bm25_retriever.get_relevant_documents(query)
         

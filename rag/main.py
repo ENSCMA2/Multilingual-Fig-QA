@@ -14,6 +14,9 @@ import time
 import os
 from pprint import pprint
 import pickle
+import nltk
+nltk.download("punkt")
+from nltk.tokenize import word_tokenize
 
 def gt_args():
     parser = argparse.ArgumentParser(description='Run RAG system')
@@ -21,7 +24,7 @@ def gt_args():
     parser.add_argument('--in_mem_index', action="store_true", default=True)
     parser.add_argument('--lang', type=str, choices=['jv', 'kn', 'su', 'sw'], default='jv')
     parser.add_argument('--testset', type=str, choices=['langdata', 'translate-test'], default='langdata')
-    parser.add_argument('--retriever', type=str, choices=['bm25', 'vec', 'wikidata'], default='bm25')
+    parser.add_argument('--retriever', type=str, choices=['bm25', 'vec', 'wikidata', 'bm25tok', 'wikidatatok'], default='bm25')
     parser.add_argument('--generator', 
                         type=str, 
                         choices=["meta-llama/Llama-2-7b-chat-hf", 
@@ -45,15 +48,19 @@ def mk_retriever(args, dataset, do_index: bool):
     match args.retriever:
         case 'bm25':
             return BM25Retriever(dataset=dataset)
+        case 'bm25tok':
+            return BM25Retriever(dataset=dataset)
         case 'vec':
             return VectorRetriever(dataset=dataset, model_name = "intfloat/e5-large-v2")
         case 'wikidata':
+            return WikidataRetriever()
+        case 'wikidatatok':
             return WikidataRetriever()
         case _:
             raise ValueError
 
 def mk_generator(args):
-    return TogetherGeneratorBase(model_name = args.generator, api_key = "36d73370984c6c1b82a96910d7b95d274a2d58b8d51a53b06299fb45b29b040b")
+    return TogetherGeneratorBase(model_name = args.generator, api_key = "7d451384126ed57f43b0a7aa49af6c8418b55a7f9376d41ef3761f1317ad7b27")
 
 def prompt_template(batch):
     q = batch["startphrase"]
@@ -160,7 +167,7 @@ def do_retrieval(pipeline: RAGPipeline, args):
             log(Qq)
             log(Q)
             log(A)
-            retrieval_res = pipeline.retrieval_pass(Q)
+            retrieval_res = pipeline.retrieval_pass(Q, tok = "tok" in args.retriever)
             retrieval_acc.append({
                 **entry,
                 **retrieval_res,

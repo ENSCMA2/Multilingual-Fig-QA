@@ -15,6 +15,11 @@ from langchain.prompts.chat import (
 )
 from langchain_core.messages import SystemMessage
 from openai import OpenAI
+from collections import Counter
+from itertools import chain
+import nltk
+nltk.download("punkt")
+from nltk.tokenize import word_tokenize
 # prompt engineering references
 # https://www.promptingguide.ai/
 # https://www.pinecone.io/learn/series/langchain/langchain-prompt-templates/
@@ -62,24 +67,30 @@ class TogetherGeneratorBase():
         ext = extract_answer(predictions)
         return ext
 
-    def extract_objects(self, question):
-        system_prompt = "You are a syntax parsing assistant. Generate a comma-separated list of answers."
-        user_prompt = f'''Extract the objects of the three sentences below.
-{question}
-Express your answer in the following format: 'object1, object2, object3'.'''
-        predictions = self.client.chat.completions.create(messages = 
-                                                        [{"role": "system",
-                                                          "content": system_prompt,},
-                                                         {"role": "user",
-                                                          "content": user_prompt,}],
-                                                     model=self.model_name,
-                                                     max_tokens = 40).choices[0].message.content
-        log(f"objects: {predictions}")
-        predictions = predictions.replace("Sure, I'd be happy to help! Here are the objects of the three sentences you provided:", "")
-        predictions = predictions.strip("'").strip("\n").strip("\t")
-        if "," in predictions:
-            return predictions.split(",")
-        return predictions.split()
+    def extract_objects(self, question, tok = False):
+        if not tok:
+            system_prompt = "You are a syntax parsing assistant. Generate a comma-separated list of answers."
+            user_prompt = f'''Extract the objects of the three sentences below.
+    {question}
+    Express your answer in the following format: 'object1, object2, object3'.'''
+            predictions = self.client.chat.completions.create(messages = 
+                                                            [{"role": "system",
+                                                              "content": system_prompt,},
+                                                             {"role": "user",
+                                                              "content": user_prompt,}],
+                                                         model=self.model_name,
+                                                         max_tokens = 40).choices[0].message.content
+            log(f"objects: {predictions}")
+            predictions = predictions.replace("Sure, I'd be happy to help! Here are the objects of the three sentences you provided:", "")
+            predictions = predictions.strip("'").strip("\n").strip("\t")
+            if "," in predictions:
+                return predictions.split(",")
+            return predictions.split()
+        qs = question.split("\n")
+        toks = []
+        tok_list = chain(*[list(set(word_tokenize(q))) for q in qs])
+        ctr = Counter(tok_list)
+        return [t for t in ctr if ctr[t] == 1]
 
     def answer_with_context(self, question: str, documents: list[Document] | list[str]) -> tuple[str, str, str]:
         formatted_docs = format_documents(documents)

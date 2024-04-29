@@ -16,9 +16,9 @@ class RAGPipeline:
         self.lang = lang
         self.translated = translated
 
-    def retrieval_pass(self, question):
+    def retrieval_pass(self, question, tok):
         log("in retrieval pass")
-        retrieved = self.retriever.query(self.generator.extract_objects(question), k=self.k, lang = self.lang, translated = self.translated)
+        retrieved = self.retriever.query(self.generator.extract_objects(question, tok), k=self.k, lang = self.lang, translated = self.translated)
         return {
             "retrieved": retrieved,
         }
