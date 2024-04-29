@@ -12,7 +12,7 @@ command:
   - ${args}
 method: bayes
 metric:
-  name: test/mc_acc
+  name: val/lang_mc_acc
   goal: maximize
 parameters:
 
