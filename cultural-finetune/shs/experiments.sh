@@ -91,6 +91,6 @@ python main.py --tags figqa_from_finetuned --pretrained_model xlm-roberta-base -
 # figqa finetue experiments
 srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 6:00:00 --pty sh shs/10k_run_twice.sh # times 0
 srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 2:00:00 --pty sh shs/10k_run_twice2.sh # times 0
-srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 2:00:00 --pty sh shs/10k_run_fix1.sh # times 0
+srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 2:00:00 --pty sh shs/10k_run_fix1.sh # times 2
 srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 6:00:00 --pty sh shs/10k_run_fix2.sh # times 1
 srun --cpus-per-gpu 1 --gres=gpu:A6000:1 --mem=8g -t 8:00:00 --pty sh shs/20k_run_twice.sh # times 0
